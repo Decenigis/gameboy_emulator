@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+dec_gl = { git = "https://github.com/Decenigis/dec_gl.git" }
+glm = "*"
+exitcode = "1.1.2"
+logger-rust = "0.2.12"
