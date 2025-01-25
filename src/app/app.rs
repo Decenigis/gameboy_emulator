@@ -6,7 +6,7 @@ use dec_gl::texture::{Texture2D, TextureManager};
 use glm::ivec2;
 
 pub struct App {
-    pub args: Vec<String>,
+    pub _args: Vec<String>,
 
     camera: UICamera,
 
@@ -34,7 +34,7 @@ impl App {
 
 
         App {
-            args,
+            _args: args,
 
             camera,
 
@@ -49,30 +49,62 @@ impl App {
         match self.shader_manager.bind("UI".to_string()) {
             Ok(shader) => {
                 shader.set_uniform("pv".to_string(), self.camera.get_matrix());
+                shader
             }
-            Err(_) => {}
-        }
+            Err(_) => return
+        };
         self.texture_manager.bind("test".to_string());
 
         let renderable = Renderable::new_initialised(&vec![
-            Vertex2d { x: 10.0, y: 10.0, u: 0.0, v: 0.0},
-            Vertex2d { x: 10.0, y: 50.0, u: 0.0, v: 1.0},
-            Vertex2d { x: 50.0, y: 10.0, u: 1.0, v: 0.0},
+            Vertex2d { x: 0.0, y: 0.0, u: 0.0, v: 0.0},
+            Vertex2d { x: 0.0, y: 144.0, u: 0.0, v: 1.0},
+            Vertex2d { x: 160.0, y: 0.0, u: 1.0, v: 0.0},
 
-            Vertex2d { x: 10.0, y: 50.0, u: 0.0, v: 1.0},
-            Vertex2d { x: 50.0, y: 10.0, u: 1.0, v: 0.0},
-            Vertex2d { x: 50.0, y: 50.0, u: 1.0, v: 1.0},
+            Vertex2d { x: 0.0, y: 144.0, u: 0.0, v: 1.0},
+            Vertex2d { x: 160.0, y: 0.0, u: 1.0, v: 0.0},
+            Vertex2d { x: 160.0, y: 144.0, u: 1.0, v: 1.0},
         ],
                                                      None).unwrap();
+
+        let mut pos = ivec2(0, 0);
 
         while !self.gl_handler.borrow().wind_should_close() {
             for _event in self.gl_handler.borrow_mut().handle_events() {
 
             }
 
+            if self.gl_handler.borrow().get_window().has_resized_this_frame() { self.resize(); }
+
+            self.framebuffer.bind_draw_target();
+
+            match self.shader_manager.bind("UI".to_string()) {
+                Ok(shader) => {
+                    shader.set_uniform("screenPos".to_string(),pos);
+                }
+                Err(_) => return
+            };
+            pos.x += 1;
+            if pos.x == 256 {
+                pos.y += 1;
+                pos.x = 0;
+            }
+
             renderable.draw();
+
+            FrameBuffer::bind_default_framebuffer();
+            self.framebuffer.blit(
+                self.gl_handler.borrow().get_window().get_window_size(),
+                gl::COLOR_BUFFER_BIT,
+                gl::NEAREST,
+            );
 
             self.gl_handler.borrow_mut().poll_window();
         }
+    }
+
+    fn resize(&mut self) {
+        let window_size = self.gl_handler.borrow().get_window().get_window_size();
+
+        self.framebuffer.resize(window_size.x, window_size.y);
     }
 }
