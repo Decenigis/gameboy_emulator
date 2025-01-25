@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-dec_gl = { git = "https://github.com/Decenigis/dec_gl.git", rev = "9d147d4" }
+dec_gl = { git = "https://github.com/Decenigis/dec_gl.git", rev = "07e515e" }
 glm = "*"
 gl = "*"
 exitcode = "1.1.2"
