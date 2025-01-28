@@ -111,7 +111,11 @@ impl App {
 
         let pos = ivec2(0, 0);
 
+        let mut frame: u64 = 0;
+        
         while !self.gl_handler.borrow().wind_should_close() {
+            self.framebuffer.clear();
+            
             for _event in self.gl_handler.borrow_mut().handle_events() {
 
             }
@@ -123,6 +127,7 @@ impl App {
             match self.shader_manager.bind("UI".to_string()) {
                 Ok(shader) => {
                     shader.set_uniform("screenPos".to_string(), pos);
+                    shader.set_uniform("drawCutoff".to_string(), (frame % 144) as i32);
                 }
                 Err(_) => return
             };
@@ -137,6 +142,8 @@ impl App {
             );
 
             self.gl_handler.borrow_mut().poll_window();
+            
+            frame += 1;
         }
     }
 

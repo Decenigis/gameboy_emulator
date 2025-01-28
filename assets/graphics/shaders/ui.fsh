@@ -11,6 +11,7 @@ uniform usampler3D tileMapBank1;
 
 uniform ivec2 screenPos;
 uniform bool tileBank;
+uniform int drawCutoff;
 
 
 bool useBank1(uint tileId) {
@@ -19,6 +20,10 @@ bool useBank1(uint tileId) {
 
 void main()
 {
+	if (actualCoords.y < uint(drawCutoff)) {
+		discard;
+	}
+
 	ivec2 actualCoordsInt = ivec2(actualCoords + screenPos) % 256;
 	ivec2 tile_position = ivec2(actualCoordsInt >> 3);
 	ivec2 tile_coords = actualCoordsInt % 8;
