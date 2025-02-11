@@ -1,11 +1,13 @@
 mod app;
+mod memory;
+mod renderer;
 
 use std::env;
 use dec_gl::GLHandler;
 use crate::app::App;
 
 fn main() {
-    match GLHandler::new("bob",
+    match GLHandler::new("GB Emulator",
                          800,
                          720,
                          false,

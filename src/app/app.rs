@@ -1,10 +1,17 @@
+use crate::memory::MemoryTrait;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::Arc;
 use dec_gl::{FrameBuffer, GLHandler, Renderable, UICamera, Vertex2d};
-use dec_gl::shader::{ShaderManager, ShaderProgram};
-use dec_gl::texture::{Texture2D, Texture2Du8, Texture3Du8, TextureManager};
-use glm::{ivec2, ivec3};
-
+use dec_gl::shader::{GLShaderProgram, ShaderManager};
+use mockall_double::double;
+#[double]
+use dec_gl::texture::{Texture2Du8, Texture3Du8};
+use glfw::{Action, Key, WindowEvent};
+use dec_gl::types::{ivec2, Vec3};
+use parking_lot::Mutex;
+use crate::memory::MemoryController;
+use crate::renderer::VideoProcessor;
 
 pub struct App {
     pub _args: Vec<String>,
@@ -16,17 +23,22 @@ pub struct App {
     shader_manager: ShaderManager
 }
 
+const GB_COLUR_0: Vec3 = Vec3{x: 0.7, y: 1.0, z: 0.5};
+const GB_COLUR_1: Vec3 = Vec3{x: 0.45, y: 0.7, z: 0.3};
+const GB_COLUR_2: Vec3 = Vec3{x: 0.3, y: 0.45, z: 0.15};
+const GB_COLUR_3: Vec3 = Vec3{x: 0.2, y: 0.3, z: 0.0};
+
 
 impl App {
      pub fn new(args: Vec<String>, gl_handler: Rc<RefCell<GLHandler>>) -> App {
          let window_size = gl_handler.borrow().get_window().get_window_size();
 
          let mut shader_manager = ShaderManager::new();
-         let mut texture_manager = TextureManager::new();
 
-         shader_manager.register_shader("UI".to_string(), ShaderProgram::load_shader_program("assets/graphics/shaders/ui", "UI", false)).unwrap();
-
-         texture_manager.register_texture("test".to_string(), Texture2D::new("assets/graphics/textures/no_texture.png".as_ref(), false)).unwrap();
+         shader_manager.register_shader(
+             "UI".to_string(), 
+             Box::new(GLShaderProgram::load_shader_program("assets/graphics/shaders/ui", "UI", false).unwrap())
+         ).unwrap();
 
          let framebuffer = FrameBuffer::new(window_size.x as i32, window_size.y as i32).unwrap();
 
@@ -49,90 +61,82 @@ impl App {
     pub fn run (&mut self) {
         match self.shader_manager.bind("UI".to_string()) {
             Ok(shader) => {
-                shader.set_uniform("pv".to_string(), self.camera.get_matrix());
+                shader.set_uniform("pv".to_string(), &self.camera.get_matrix());
 
-                shader.set_uniform("bgMap".to_string(), 0);
-                shader.set_uniform("tileMapBank0".to_string(), 1);
-                shader.set_uniform("tileMapBank1".to_string(), 2);
+                shader.set_uniform("bgMap".to_string(), &0);
+                shader.set_uniform("tileMapBank0".to_string(), &1);
+                shader.set_uniform("tileMapBank1".to_string(), &2);
+
+                shader.set_uniform("gbColour0".to_string(), &GB_COLUR_0);
+                shader.set_uniform("gbColour1".to_string(), &GB_COLUR_1);
+                shader.set_uniform("gbColour2".to_string(), &GB_COLUR_2);
+                shader.set_uniform("gbColour3".to_string(), &GB_COLUR_3);
 
                 shader
             }
             Err(_) => return
         };
 
-        let mut bg_map = Texture2Du8::new();
-        let mut tilemap_bank_0 = Texture3Du8::new();
-        let mut tilemap_bank_1 = Texture3Du8::new();
-        //let mut tilemap_bank_2 = Texture3Du8::new();
+        let memory_controller = Arc::new(Mutex::new(MemoryController::new()));
+        
+        let mut video_processor = {
+            let vram = memory_controller.lock().get_vram_arc();
+            let video_io = memory_controller.lock().get_io_map().get_video_io();
 
-        let mut bg_map_data = vec![0; 1024];
-        let mut tilemap_bank_0_data = vec![0; 2048];
-        let tilemap_bank_1_data = vec![0; 2048];
-        // let mut tilemap_bank_2 = vec![0; 32 * 32];
+            VideoProcessor::new(
+                Texture3Du8::default(),
+                Texture3Du8::default(),
+                Texture3Du8::default(),
 
-        for i in 0..16 {
-            tilemap_bank_0_data[16 + i] = 85 << (i % 2) ;
-        }
+                Texture2Du8::default(),
+                Texture2Du8::default(),
 
-        for x in 0..=10 {
-            for y in 0..=10 {
-                bg_map_data[4 + x + (3 + y) * 32] = 1;
-            }
-        }
+                Renderable::new_initialised::<Vertex2d>(&vec![], None).unwrap(),
 
-        bg_map.set_data(
-            &bg_map_data,
-            ivec2(32, 32)).unwrap();
+                vram,
+                video_io,
+            ).unwrap()
+        };
 
-        bg_map.bind_to_unit(0);
+        let mut pos = ivec2(0, 0);
+        let mut velocity = ivec2(0, 0);
 
-        tilemap_bank_0.set_data(
-            &tilemap_bank_0_data,
-            ivec3(2, 8, 128)).unwrap();
-
-        tilemap_bank_0.bind_to_unit(1);
-
-        tilemap_bank_1.set_data(
-            &tilemap_bank_1_data,
-            ivec3(2, 8, 128)).unwrap();
-
-        tilemap_bank_1.bind_to_unit(2);
-
-
-        let renderable = Renderable::new_initialised(&vec![
-            Vertex2d { x: 0.0, y: 0.0, u: 0.0, v: 0.0},
-            Vertex2d { x: 0.0, y: 144.0, u: 0.0, v: 1.0},
-            Vertex2d { x: 160.0, y: 0.0, u: 1.0, v: 0.0},
-
-            Vertex2d { x: 0.0, y: 144.0, u: 0.0, v: 1.0},
-            Vertex2d { x: 160.0, y: 0.0, u: 1.0, v: 0.0},
-            Vertex2d { x: 160.0, y: 144.0, u: 1.0, v: 1.0},
-        ],None).unwrap();
-
-        let pos = ivec2(0, 0);
-
-        let mut frame: u64 = 0;
+        let mut _frame: u64 = 0;
         
         while !self.gl_handler.borrow().wind_should_close() {
             self.framebuffer.clear();
             
-            for _event in self.gl_handler.borrow_mut().handle_events() {
-
+            for event in self.gl_handler.borrow_mut().handle_events() {
+                match event {
+                    WindowEvent::Key(Key::W, _, Action::Press, _) => { velocity.y -= 1 }
+                    WindowEvent::Key(Key::W, _, Action::Release, _) => { velocity.y += 1 }
+                    WindowEvent::Key(Key::S, _, Action::Press, _) => { velocity.y += 1 }
+                    WindowEvent::Key(Key::S, _, Action::Release, _) => { velocity.y -= 1 }
+                    WindowEvent::Key(Key::A, _, Action::Press, _) => { velocity.x -= 1 }
+                    WindowEvent::Key(Key::A, _, Action::Release, _) => { velocity.x += 1 }
+                    WindowEvent::Key(Key::D, _, Action::Press, _) => { velocity.x += 1 }
+                    WindowEvent::Key(Key::D, _, Action::Release, _) => { velocity.x -= 1 }
+                    _ => { },
+                }
             }
 
             if self.gl_handler.borrow().get_window().has_resized_this_frame() { self.resize(); }
 
             self.framebuffer.bind_draw_target();
 
+            pos = pos + velocity;
+
+            memory_controller.lock().set(0xFF43, pos.x as u8);
+            memory_controller.lock().set(0xFF42, pos.y as u8);
+
+            video_processor.try_update_graphics_data();
+
             match self.shader_manager.bind("UI".to_string()) {
                 Ok(shader) => {
-                    shader.set_uniform("screenPos".to_string(), pos);
-                    shader.set_uniform("drawCutoff".to_string(), (frame % 144) as i32);
+                    video_processor.draw(shader).unwrap();
                 }
                 Err(_) => return
             };
-
-            renderable.draw();
 
             FrameBuffer::bind_default_framebuffer();
             self.framebuffer.blit(
@@ -143,7 +147,7 @@ impl App {
 
             self.gl_handler.borrow_mut().poll_window();
             
-            frame += 1;
+            _frame += 1;
         }
     }
 

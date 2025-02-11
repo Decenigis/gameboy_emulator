@@ -3,9 +3,17 @@ name = "gameboy_emulator"
 version = "0.1.0"
 edition = "2021"
 
+[profile.dev.package."*"]
+opt-level = 3
+
 [dependencies]
-dec_gl = { git = "https://github.com/Decenigis/dec_gl.git", rev = "07e515e" }
-glm = "*"
+dec_gl = { git = "https://github.com/Decenigis/dec_gl.git", rev = "67b9d3a" }
 gl = "*"
+glfw = "*"
 exitcode = "1.1.2"
 logger-rust = "0.2.12"
+rand = "0.9.0"
+thiserror = "2.0.11"
+mockall = "*"
+mockall_double = "0.3.1"
+parking_lot = "0.12.3"
