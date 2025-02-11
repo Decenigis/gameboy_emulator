@@ -1,6 +1,5 @@
 use std::sync::{Arc};
 use parking_lot::Mutex;
-use crate::memory::io_map::io_trait::IOTrait;
 use crate::memory::io_map::video_io::VideoIO;
 use crate::memory::memory_trait::MemoryTrait;
 
@@ -18,6 +17,10 @@ impl MemoryTrait for IOMap {
         if self.video_io.lock().has_address(position) { self.video_io.lock().set(position, value) }
         else { 0xFF }
     }
+
+    fn has_address(&self, position: u16) -> bool { //all members must be or'd together for this
+        self.video_io.lock().has_address(position)
+    }
 }
 
 impl IOMap {
@@ -27,7 +30,7 @@ impl IOMap {
         }
     }
 
-    pub fn get_video_io(&mut self) -> Arc<Mutex<VideoIO>> {
+    pub fn get_video_io(&self) -> Arc<Mutex<VideoIO>> {
         self.video_io.clone()
     }
 }

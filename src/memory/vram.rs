@@ -20,15 +20,12 @@ pub struct VRAM {
     0x9C00-0x9FFF -> TileMap bank 1
  */
 
-const TILE_BANK_SIZE: usize = 0x800;
-const MAP_BANK_SIZE: usize = 0x400;
-
 impl MemoryTrait for VRAM {
 
     fn get(&self, position: u16) -> u8 {
 
-        let position_in_tile_bank = position as usize % TILE_BANK_SIZE;
-        let position_in_map_bank = position as usize % MAP_BANK_SIZE;
+        let position_in_tile_bank = position as usize % Self::TILE_BANK_SIZE;
+        let position_in_map_bank = position as usize % Self::MAP_BANK_SIZE;
 
         if position < 0x8000 {
             0xFF
@@ -56,8 +53,8 @@ impl MemoryTrait for VRAM {
     fn set(&mut self, position: u16, value: u8) -> u8 {
         let old_value: u8;
 
-        let position_in_tile_bank = position as usize % TILE_BANK_SIZE;
-        let position_in_map_bank = position as usize % MAP_BANK_SIZE;
+        let position_in_tile_bank = position as usize % Self::TILE_BANK_SIZE;
+        let position_in_map_bank = position as usize % Self::MAP_BANK_SIZE;
 
         if position < 0x8000 {
             old_value = 0xFF
@@ -93,29 +90,37 @@ impl MemoryTrait for VRAM {
 
         old_value
     }
+
+    fn has_address(&self, position: u16) -> bool {
+        position >= 0x8000 && position < 0xA000
+    }
 }
 
 impl VRAM {
+
+    const TILE_BANK_SIZE: usize = 0x800;
+    const MAP_BANK_SIZE: usize = 0x400;
+
     pub fn new() -> Self {
         let mut tile_bank_0 = vec![];
         for byte in fs::read(Path::new("assets/graphics/initial_tile_data.bin")).unwrap() {
             tile_bank_0.push(byte);
         }
-        tile_bank_0.resize(TILE_BANK_SIZE, 0);
+        tile_bank_0.resize(Self::TILE_BANK_SIZE, 0);
 
         let mut map_bank_0 = vec![0; 0x100];
         for byte in fs::read(Path::new("assets/graphics/initial_map_data.bin")).unwrap() {
             map_bank_0.push(byte);
         }
-        map_bank_0.resize(MAP_BANK_SIZE, 0);
+        map_bank_0.resize(Self::MAP_BANK_SIZE, 0);
         
         Self {
             tile_bank_0, tile_bank_0_stale: true,
-            tile_bank_1: vec![0; TILE_BANK_SIZE], tile_bank_1_stale: true,
-            tile_bank_2: vec![0; TILE_BANK_SIZE], tile_bank_2_stale: true,
+            tile_bank_1: vec![0; Self::TILE_BANK_SIZE], tile_bank_1_stale: true,
+            tile_bank_2: vec![0; Self::TILE_BANK_SIZE], tile_bank_2_stale: true,
 
             map_bank_0, map_bank_0_stale: true,
-            map_bank_1: vec![0; MAP_BANK_SIZE], map_bank_1_stale: true
+            map_bank_1: vec![0; Self::MAP_BANK_SIZE], map_bank_1_stale: true
         }
     }
 
@@ -171,7 +176,7 @@ impl VRAM {
 
 
 #[cfg(test)]
-mod vram_tests {
+mod tests {
     use super::*;
     
     #[test]
@@ -286,5 +291,26 @@ mod vram_tests {
         assert_eq!(vram.get_tile_bank_2_if_stale(), None);
         assert_eq!(vram.get_map_bank_0_if_stale(), None);
         assert_eq!(vram.get_map_bank_1_if_stale(), None);
+    }
+
+    #[test]
+    fn has_address_in_bounds_is_true() {
+        let vram = VRAM::new();
+
+        assert!(vram.has_address(0x8000));
+    }
+
+    #[test]
+    fn has_address_low_out_of_bounds_is_false() {
+        let vram = VRAM::new();
+
+        assert!(!vram.has_address(0x7FFF));
+    }
+
+    #[test]
+    fn has_address_high_out_of_bounds_is_false() {
+        let vram = VRAM::new();
+
+        assert!(!vram.has_address(0xA000));
     }
 }

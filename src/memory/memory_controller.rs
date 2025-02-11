@@ -21,11 +21,14 @@ pub struct MemoryController {
 
 impl MemoryTrait for MemoryController {
     fn get(&self, position: u16) -> u8 {
-        if position >= 0x8000 && position <= 0x9FFF {
+        if self.vram.lock().has_address(position) {
             self.vram.lock().get(position)
         }
-        else if position >= 0xFF00 && position <= 0xFF7F {
-            self.get(position)
+        else if self.ram.has_address(position) {
+            self.ram.get(position)
+        }
+        else if self.io_map.has_address(position) {
+            self.io_map.get(position)
         }
         else {
             0xFF
@@ -33,15 +36,22 @@ impl MemoryTrait for MemoryController {
     }
 
     fn set(&mut self, position: u16, value: u8) -> u8 {
-        if position >= 0x8000 && position <= 0x9FFF {
+        if self.vram.lock().has_address(position) {
             self.vram.lock().set(position, value)
         }
-        else if position >= 0xFF00 && position <= 0xFF7F {
+        else if self.ram.has_address(position) {
+            self.ram.set(position, value)
+        }
+        else if self.ram.has_address(position) {
             self.io_map.set(position, value)
         }
         else {
             0xFF
         }
+    }
+
+    fn has_address(&self, _position: u16) -> bool {
+        true
     }
 }
 
@@ -58,11 +68,11 @@ impl MemoryController {
         }
     }
 
-
     pub fn get_vram_arc(&self) -> Arc<Mutex<VRAM>> {
         self.vram.clone()
     }
-    pub fn get_io_map(&mut self) -> &mut IOMap {
-        &mut self.io_map
+
+    pub fn get_io_map(&self) -> &IOMap {
+        &self.io_map
     }
 }

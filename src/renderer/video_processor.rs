@@ -167,7 +167,7 @@ impl VideoProcessor {
 
 
 #[cfg(test)]
-mod video_processor_tests {
+mod tests {
     use std::cell::RefCell;
     use std::collections::HashMap;
     use std::rc::Rc;

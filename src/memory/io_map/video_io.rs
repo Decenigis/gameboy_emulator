@@ -1,4 +1,3 @@
-use crate::memory::io_map::io_trait::IOTrait;
 use crate::memory::memory_trait::MemoryTrait;
 
 pub struct VideoIO {
@@ -14,12 +13,6 @@ pub struct VideoIO {
     obj_pal_1: u8,  //0xFF49
     win_x: u8,      //0xFF4A
     win_y: u8,      //0xFF4B
-}
-
-impl IOTrait for VideoIO {
-    fn has_address(&self, address: u16) -> bool {
-        address >= 0xFF40 && address <= 0xFF4B
-    }
 }
 
 impl MemoryTrait for VideoIO {
@@ -62,6 +55,10 @@ impl MemoryTrait for VideoIO {
         *reference = value;
 
         old_value
+    }
+
+    fn has_address(&self, address: u16) -> bool {
+        address >= 0xFF40 && address <= 0xFF4B
     }
 }
 
@@ -136,7 +133,7 @@ impl VideoIO {
 
 
 #[cfg(test)]
-mod video_io_tests {
+mod tests {
     use super::*;
 
     #[test]
@@ -164,6 +161,4 @@ mod video_io_tests {
         assert_eq!(video_io.has_address(0xFF39), false);
         assert_eq!(video_io.has_address(0xFF4C), false);
     }
-    
-    
 }

@@ -5,6 +5,8 @@ pub trait MemoryTrait {
 
     fn set(&mut self, position: u16, value: u8) -> u8;
 
+    fn has_address(&self, position: u16) -> bool;
+
     fn _randomise(data: &mut Vec<u8>) {
         let mut rng = rand::rng();
 
