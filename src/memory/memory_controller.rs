@@ -30,6 +30,9 @@ impl MemoryTrait for MemoryController {
         else if self.io_map.has_address(position) {
             self.io_map.get(position)
         }
+        else if self.hram.has_address(position) {
+            self.hram.get(position)
+        }
         else {
             0xFF
         }
@@ -42,8 +45,11 @@ impl MemoryTrait for MemoryController {
         else if self.ram.has_address(position) {
             self.ram.set(position, value)
         }
-        else if self.ram.has_address(position) {
+        else if self.io_map.has_address(position) {
             self.io_map.set(position, value)
+        }
+        else if self.hram.has_address(position) {
+            self.hram.set(position, value)
         }
         else {
             0xFF
@@ -75,4 +81,95 @@ impl MemoryController {
     pub fn get_io_map(&self) -> &IOMap {
         &self.io_map
     }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn writes_to_vram() {
+        let expected_value = 0x12;
+        let mut memory_controller = MemoryController::new();
+        let vram = memory_controller.get_vram_arc();
+
+        memory_controller.set(0x8000, expected_value);
+
+        assert_eq!(vram.lock().get(0x8000), expected_value);
+    }
+
+    #[test]
+    fn reads_from_vram() {
+        let expected_value = 0x12;
+        let memory_controller = MemoryController::new();
+        let vram = memory_controller.get_vram_arc();
+
+        vram.lock().set(0x8000, expected_value);
+
+        assert_eq!(memory_controller.get(0x8000), expected_value);
+    }
+
+
+    #[test]
+    fn writes_to_ram() {
+        let expected_value = 0x12;
+        let mut memory_controller = MemoryController::new();
+
+        memory_controller.set(0xC000, expected_value);
+
+        assert_eq!(memory_controller.ram.get(0xC000), expected_value);
+    }
+
+    #[test]
+    fn reads_from_ram() {
+        let expected_value = 0x12;
+        let mut memory_controller = MemoryController::new();
+
+        memory_controller.ram.set(0xC000, expected_value);
+
+        assert_eq!(memory_controller.get(0xC000), expected_value);
+    }
+
+
+    #[test]
+    fn writes_to_io_map() {
+        let expected_value = 0x12;
+        let mut memory_controller = MemoryController::new();
+
+        memory_controller.set(0xFF40, expected_value);
+
+        assert_eq!(memory_controller.io_map.get(0xFF40), expected_value);
+    }
+
+    #[test]
+    fn reads_from_io_map() {
+        let expected_value = 0x12;
+        let mut memory_controller = MemoryController::new();
+
+        memory_controller.io_map.set(0xFF40, expected_value);
+
+        assert_eq!(memory_controller.get(0xFF40), expected_value);
+    }
+
+    #[test]
+    fn writes_to_hram() {
+        let expected_value = 0x12;
+        let mut memory_controller = MemoryController::new();
+
+        memory_controller.set(0xFF80, expected_value);
+
+        assert_eq!(memory_controller.hram.get(0xFF80), expected_value);
+    }
+
+    #[test]
+    fn reads_from_hram() {
+        let expected_value = 0x12;
+        let mut memory_controller = MemoryController::new();
+
+        memory_controller.hram.set(0xFF80, expected_value);
+
+        assert_eq!(memory_controller.get(0xFF80), expected_value);
+    }
+
 }
