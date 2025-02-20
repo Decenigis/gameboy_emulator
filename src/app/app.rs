@@ -10,6 +10,7 @@ use dec_gl::texture::{Texture2Du8, Texture3Du8};
 use glfw::{Action, Key, WindowEvent};
 use dec_gl::types::{ivec2, Vec3};
 use parking_lot::Mutex;
+use crate::cpu::CPU;
 use crate::memory::MemoryController;
 use crate::renderer::VideoProcessor;
 
@@ -78,6 +79,7 @@ impl App {
         };
 
         let memory_controller = Arc::new(Mutex::new(MemoryController::new()));
+        let _cpu = CPU::new();
         
         let mut video_processor = {
             let vram = memory_controller.lock().get_vram_arc();

@@ -1,6 +1,7 @@
 mod app;
 mod memory;
 mod renderer;
+mod cpu;
 
 use std::env;
 use dec_gl::GLHandler;
