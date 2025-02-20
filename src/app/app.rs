@@ -100,9 +100,6 @@ impl App {
             ).unwrap()
         };
 
-        let mut pos = ivec2(0, 0);
-        let mut velocity = ivec2(0, 0);
-
         let mut _frame: u64 = 0;
         
         while !self.gl_handler.borrow().wind_should_close() {
@@ -110,14 +107,6 @@ impl App {
             
             for event in self.gl_handler.borrow_mut().handle_events() {
                 match event {
-                    WindowEvent::Key(Key::W, _, Action::Press, _) => { velocity.y -= 1 }
-                    WindowEvent::Key(Key::W, _, Action::Release, _) => { velocity.y += 1 }
-                    WindowEvent::Key(Key::S, _, Action::Press, _) => { velocity.y += 1 }
-                    WindowEvent::Key(Key::S, _, Action::Release, _) => { velocity.y -= 1 }
-                    WindowEvent::Key(Key::A, _, Action::Press, _) => { velocity.x -= 1 }
-                    WindowEvent::Key(Key::A, _, Action::Release, _) => { velocity.x += 1 }
-                    WindowEvent::Key(Key::D, _, Action::Press, _) => { velocity.x += 1 }
-                    WindowEvent::Key(Key::D, _, Action::Release, _) => { velocity.x -= 1 }
                     _ => { },
                 }
             }
@@ -125,11 +114,6 @@ impl App {
             if self.gl_handler.borrow().get_window().has_resized_this_frame() { self.resize(); }
 
             self.framebuffer.bind_draw_target();
-
-            pos = pos + velocity;
-
-            memory_controller.lock().set(0xFF43, pos.x as u8);
-            memory_controller.lock().set(0xFF42, pos.y as u8);
 
             video_processor.try_update_graphics_data();
 
