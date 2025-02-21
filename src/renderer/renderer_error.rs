@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use dec_gl::RenderError;
 use thiserror::Error;
 

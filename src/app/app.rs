@@ -1,4 +1,3 @@
-use crate::memory::MemoryTrait;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -7,7 +6,6 @@ use dec_gl::shader::{GLShaderProgram, ShaderManager};
 use mockall_double::double;
 #[double]
 use dec_gl::texture::{Texture2Du8, Texture3Du8};
-use glfw::{Action, Key, WindowEvent};
 use dec_gl::types::{ivec2, Vec3};
 use parking_lot::Mutex;
 use crate::cpu::CPU;
