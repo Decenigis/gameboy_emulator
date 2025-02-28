@@ -1,7 +1,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
-use dec_gl::{FrameBuffer, GLHandler, Renderable, UICamera, Vertex2d};
+use dec_gl::{FrameBuffer, GLHandler, UICamera, Vertex2d};
+use dec_gl::renderable::GlRenderable;
 use dec_gl::shader::{GLShaderProgram, ShaderManager};
 use mockall_double::double;
 #[double]
@@ -91,7 +92,7 @@ impl App {
                 Texture2Du8::default(),
                 Texture2Du8::default(),
 
-                Renderable::new_initialised::<Vertex2d>(&vec![], None).unwrap(),
+                Box::new(GlRenderable::<Vertex2d>::new::<Vertex2d>()),
 
                 vram,
                 video_io,

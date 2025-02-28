@@ -10,8 +10,7 @@ uniform usampler3D tileMapBank0;
 uniform usampler3D tileMapBank1;
 
 uniform ivec2 scroll;
-uniform bool tileBank;
-uniform int drawCutoff;
+uniform ivec2 draw_cutoff;
 
 uniform vec3 gbColour0;
 uniform vec3 gbColour1;
@@ -25,7 +24,7 @@ bool useBank1(uint tileId) {
 
 void main()
 {
-	if (actualCoords.y < uint(drawCutoff)) {
+	if (int(actualCoords.x) < draw_cutoff.x || int(actualCoords.y) < draw_cutoff.y) {
 		discard;
 	}
 

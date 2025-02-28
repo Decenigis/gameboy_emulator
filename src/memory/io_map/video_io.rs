@@ -46,8 +46,8 @@ impl MemoryTrait for VideoIO {
             0xFF47 => &mut self.bg_pal,
             0xFF48 => &mut self.obj_pal_0,
             0xFF49 => &mut self.obj_pal_1,
-            0xFF4A => &mut self.win_x,
-            0xFF4B => &mut self.win_y,
+            0xFF4A => &mut self.win_y,
+            0xFF4B => &mut self.win_x,
             _ => {return 0xFF;}
         };
 
@@ -89,11 +89,11 @@ impl VideoIO {
         self.lcd_stat
     }
 
-    pub fn get_scroll_y(&self) -> u8 {
+    pub fn get_bg_y(&self) -> u8 {
         self.scroll_y
     }
 
-    pub fn get_scroll_x(&self) -> u8 {
+    pub fn get_bg_x(&self) -> u8 {
         self.scroll_x
     }
 
@@ -121,11 +121,11 @@ impl VideoIO {
         self.obj_pal_1
     }
 
-    pub fn _get_win_x(&self) -> u8 {
+    pub fn get_win_x(&self) -> u8 {
         self.win_x
     }
 
-    pub fn _get_win_y(&self) -> u8 {
+    pub fn get_win_y(&self) -> u8 {
         self.win_y
     }
 }

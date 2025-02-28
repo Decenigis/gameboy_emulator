@@ -1,13 +1,13 @@
 [package]
 name = "gameboy_emulator"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [profile.dev.package."*"]
 opt-level = 3
 
 [dependencies]
-dec_gl = { git = "https://github.com/Decenigis/dec_gl.git", rev = "67b9d3a" }
+dec_gl = { git = "https://github.com/Decenigis/dec_gl.git", version = "0.3.0" }
 gl = "*"
 glfw = "*"
 exitcode = "1.1.2"
