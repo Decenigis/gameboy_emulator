@@ -30,6 +30,8 @@ impl HRAM {
     }
 }
 
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
