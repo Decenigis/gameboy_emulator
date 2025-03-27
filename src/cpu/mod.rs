@@ -5,6 +5,6 @@ mod alu;
 mod registers;
 mod register;
 mod carry_trait;
-
+mod instructions;
 
 pub use cpu::CPU;

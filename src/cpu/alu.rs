@@ -10,12 +10,12 @@ const SUB_FLAG: u8 = 6;         //N
 const HALF_CARRY_FLAG: u8 = 5;  //H
 const CARRY_FLAG: u8 = 4;       //C
 
-struct ALU {
+pub struct ALU {
     flags: Rc<RefCell<Register8>>
 }
 
 
-impl ALU where  {
+impl ALU {
 
     pub fn new(flags: Rc<RefCell<Register8>>) -> Self {
         Self {

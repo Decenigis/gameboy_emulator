@@ -78,7 +78,7 @@ impl App {
         };
 
         let memory_controller = Arc::new(Mutex::new(MemoryController::new()));
-        let _cpu = CPU::new();
+        let mut cpu = CPU::new_with_nop();
         
         let mut video_processor = {
             let vram = memory_controller.lock().get_vram_arc();
@@ -104,6 +104,8 @@ impl App {
         while !self.gl_handler.borrow().wind_should_close() {
             self.framebuffer.clear();
             
+            cpu.clock(memory_controller.clone());
+
             for event in self.gl_handler.borrow_mut().handle_events() {
                 match event {
                     _ => { },
