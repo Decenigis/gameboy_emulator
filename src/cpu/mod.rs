@@ -6,5 +6,8 @@ mod registers;
 mod register;
 mod carry_trait;
 mod instructions;
+mod game_boy_cpu;
+mod nullable_cpu;
 
 pub use cpu::CPU;
+pub use game_boy_cpu::GameBoyCPU;

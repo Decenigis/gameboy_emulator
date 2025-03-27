@@ -9,7 +9,7 @@ use mockall_double::double;
 use dec_gl::texture::{Texture2Du8, Texture3Du8};
 use dec_gl::types::{ivec2, Vec3};
 use parking_lot::Mutex;
-use crate::cpu::CPU;
+use crate::cpu::{GameBoyCPU, CPU};
 use crate::memory::MemoryController;
 use crate::renderer::VideoProcessor;
 
@@ -36,7 +36,7 @@ impl App {
          let mut shader_manager = ShaderManager::new();
 
          shader_manager.register_shader(
-             "UI".to_string(), 
+             "UI".to_string(),
              Box::new(GLShaderProgram::load_shader_program("assets/graphics/shaders/ui", "UI", false).unwrap())
          ).unwrap();
 
@@ -78,8 +78,8 @@ impl App {
         };
 
         let memory_controller = Arc::new(Mutex::new(MemoryController::new()));
-        let mut cpu = CPU::new_with_nop();
-        
+        let mut cpu = GameBoyCPU::new_with_nop();
+
         let mut video_processor = {
             let vram = memory_controller.lock().get_vram_arc();
             let video_io = memory_controller.lock().get_io_map().get_video_io();
@@ -100,10 +100,10 @@ impl App {
         };
 
         let mut _frame: u64 = 0;
-        
+
         while !self.gl_handler.borrow().wind_should_close() {
             self.framebuffer.clear();
-            
+
             cpu.clock(memory_controller.clone());
 
             for event in self.gl_handler.borrow_mut().handle_events() {
@@ -133,7 +133,7 @@ impl App {
             );
 
             self.gl_handler.borrow_mut().poll_window();
-            
+
             _frame += 1;
         }
     }
