@@ -8,6 +8,7 @@ use mockall_double::double;
 #[double]
 use dec_gl::texture::{Texture2Du8, Texture3Du8};
 use dec_gl::types::{ivec2, Vec3};
+use dialog::{DialogBox, FileSelection};
 use parking_lot::Mutex;
 use crate::cpu::{GameBoyCPU, CPU};
 use crate::memory::MemoryController;
@@ -80,9 +81,15 @@ impl App {
         let memory_controller = Arc::new(Mutex::new(MemoryController::new()));
         let mut cpu = GameBoyCPU::new_with_nop();
 
+        let rom_path = match self.get_rom_path() {
+            Some(path) => path,
+            None => return
+        };
+        memory_controller.lock().load_rom(&rom_path);
+
         let mut video_processor = {
             let vram = memory_controller.lock().get_vram_arc();
-            let video_io = memory_controller.lock().get_io_map().get_video_io();
+            let video_io = memory_controller.lock().get_io_map().lock().get_video_io();
 
             VideoProcessor::new(
                 Texture3Du8::default(),
@@ -98,6 +105,8 @@ impl App {
                 video_io,
             ).unwrap()
         };
+        
+        
 
         let mut _frame: u64 = 0;
 
@@ -142,5 +151,12 @@ impl App {
         let window_size = self.gl_handler.borrow().get_window().get_window_size();
 
         self.framebuffer.resize(window_size.x, window_size.y);
+    }
+
+    fn get_rom_path(&self) -> Option<String> {
+        FileSelection::new("Open ROM File")
+            .title("Rom File")
+            .show()
+            .unwrap()
     }
 }

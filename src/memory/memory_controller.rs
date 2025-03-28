@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::sync::Arc;
 use parking_lot::Mutex;
 use crate::memory::hram::HRAM;
@@ -15,20 +16,23 @@ pub struct MemoryController {
     sram: SRAM,
     ram: RAM,
     oam: OAM,
-    io_map: IOMap,
+    io_map: Arc<Mutex<IOMap>>,
     hram: HRAM,
 }
 
 impl MemoryTrait for MemoryController {
     fn get(&self, position: u16) -> u8 {
-        if self.vram.lock().has_address(position) {
+        if self.rom.has_address(position) {
+            self.rom.get(position)
+        }
+        else if self.vram.lock().has_address(position) {
             self.vram.lock().get(position)
         }
         else if self.ram.has_address(position) {
             self.ram.get(position)
         }
-        else if self.io_map.has_address(position) {
-            self.io_map.get(position)
+        else if self.io_map.lock().has_address(position) {
+            self.io_map.lock().get(position)
         }
         else if self.hram.has_address(position) {
             self.hram.get(position)
@@ -39,14 +43,17 @@ impl MemoryTrait for MemoryController {
     }
 
     fn set(&mut self, position: u16, value: u8) -> u8 {
-        if self.vram.lock().has_address(position) {
+        if self.rom.has_address(position) {
+            self.rom.set(position, value)
+        }
+        else if self.vram.lock().has_address(position) {
             self.vram.lock().set(position, value)
         }
         else if self.ram.has_address(position) {
             self.ram.set(position, value)
         }
-        else if self.io_map.has_address(position) {
-            self.io_map.set(position, value)
+        else if self.io_map.lock().has_address(position) {
+            self.io_map.lock().set(position, value)
         }
         else if self.hram.has_address(position) {
             self.hram.set(position, value)
@@ -69,17 +76,21 @@ impl MemoryController {
             sram: SRAM::new(),
             ram: RAM::new(),
             oam: OAM::new(),
-            io_map: IOMap::new(),
+            io_map: Arc::new(Mutex::new(IOMap::new())),
             hram: HRAM::new()
         }
+    }
+
+    pub fn load_rom(&mut self, path: &String) {
+        self.rom.load_rom_file(Path::new(path));
     }
 
     pub fn get_vram_arc(&self) -> Arc<Mutex<VRAM>> {
         self.vram.clone()
     }
 
-    pub fn get_io_map(&self) -> &IOMap {
-        &self.io_map
+    pub fn get_io_map(&self) -> Arc<Mutex<IOMap>> {
+        self.io_map.clone()
     }
 }
 
@@ -139,15 +150,15 @@ mod tests {
 
         memory_controller.set(0xFF40, expected_value);
 
-        assert_eq!(memory_controller.io_map.get(0xFF40), expected_value);
+        assert_eq!(memory_controller.io_map.lock().get(0xFF40), expected_value);
     }
 
     #[test]
     fn reads_from_io_map() {
         let expected_value = 0x12;
-        let mut memory_controller = MemoryController::new();
+        let memory_controller = MemoryController::new();
 
-        memory_controller.io_map.set(0xFF40, expected_value);
+        memory_controller.io_map.lock().set(0xFF40, expected_value);
 
         assert_eq!(memory_controller.get(0xFF40), expected_value);
     }
