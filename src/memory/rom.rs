@@ -43,7 +43,7 @@ impl ROM {
 
     pub fn new() -> Self {
         Self {
-            data: vec![vec![0; Self::ROM_BANK_SIZE], vec![0; Self::ROM_BANK_SIZE]],
+            data: vec![vec![0xFF; Self::ROM_BANK_SIZE], vec![0xFF; Self::ROM_BANK_SIZE]],
             active_bank: 1
         }
     }
