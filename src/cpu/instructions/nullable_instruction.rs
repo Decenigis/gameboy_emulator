@@ -13,6 +13,7 @@ pub struct NullableInstructionInternal {
 
 
 impl NullableInstructionInternal {
+    
     pub fn new() -> Self {
         Self {
             was_executed: false,
@@ -22,12 +23,14 @@ impl NullableInstructionInternal {
 
 
 pub struct NullableInstruction {
+    
     internal: Rc<RefCell<NullableInstructionInternal>>,
     opcode: u8,
     get_next_instruction: bool
 }
 
 impl NullableInstruction {
+
     pub fn new(internal: Rc<RefCell<NullableInstructionInternal>>, opcode: u8, get_next_instruction: bool) -> Self {
         Self {
             internal,
@@ -46,7 +49,7 @@ impl Instruction for NullableInstruction {
         self.opcode
     }
 
-    fn act(&mut self, _registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>) -> bool {
+    fn act(&mut self, _registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
         self.internal.borrow_mut().was_executed = true;
 
         self.get_next_instruction

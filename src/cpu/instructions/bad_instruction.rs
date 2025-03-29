@@ -6,10 +6,12 @@ use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
 
 pub struct BadInstruction {
+
     opcode: u8
 }
 
 impl Instruction for BadInstruction {
+
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         Some(Box::new(Self {opcode: *opcode}))
     }
@@ -18,7 +20,8 @@ impl Instruction for BadInstruction {
         self.opcode
     }
 
-    fn act(&mut self, _registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>) -> bool {
+    fn act(&mut self, _registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+        println!("Bad instruction: {:#X}", self.opcode);
         false
     }
 }
@@ -53,7 +56,7 @@ mod tests {
 
         let mut instruction = BadInstruction { opcode: 0x00 };
 
-        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())));
+        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false);
 
         assert_eq!(false, result);
     }

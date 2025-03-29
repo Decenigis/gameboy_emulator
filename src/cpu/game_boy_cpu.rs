@@ -10,6 +10,7 @@ use crate::memory::{MemoryController, MemoryTrait};
 pub struct GameBoyCPU {
     registers: Registers,
     alu: ALU,
+    enable_interrupts: bool,
     current_instruction: Box<dyn Instruction>
 }
 
@@ -17,7 +18,7 @@ pub struct GameBoyCPU {
 impl CPU for GameBoyCPU {
 
     fn clock (&mut self, memory: Arc<Mutex<MemoryController>>) {
-        let instruction_finished = self.current_instruction.act(&mut self.registers, &mut self.alu, memory.clone());
+        let instruction_finished = self.current_instruction.act(&mut self.registers, &mut self.alu, memory.clone(), &mut self.enable_interrupts);
 
         if instruction_finished {
             self.load_next_instruction(memory)
@@ -45,10 +46,11 @@ impl GameBoyCPU {
         Self {
             registers,
             alu: ALU::new(f),
+            enable_interrupts: false,
             current_instruction: first_instruction,
         }
     }
-    
+
 
     fn load_next_instruction (&mut self, memory: Arc<Mutex<MemoryController>>) {
         let opcode = memory.lock().get(self.registers.pc.get_value());

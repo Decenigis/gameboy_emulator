@@ -20,7 +20,7 @@ impl Instruction for NOP {
         0x00
     }
 
-    fn act(&mut self, _registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>) -> bool {
+    fn act(&mut self, _registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
         true
     }
 }
@@ -59,7 +59,7 @@ mod tests {
 
         let mut instruction = NOP {};
 
-        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())));
+        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())) ,&mut false);
 
         assert_eq!(true, result);
     }
