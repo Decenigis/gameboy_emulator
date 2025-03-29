@@ -47,6 +47,7 @@ impl Instruction for LdSpNn {
 
 #[cfg(test)]
 mod tests {
+    use crate::cpu::instructions::jp_nn::JpNn;
     use super::*;
 
     #[test]
@@ -71,23 +72,52 @@ mod tests {
     }
 
     #[test]
-    fn act_loads_new_address_to_sp_over_3_ticks() {
+    fn load_low_byte_on_tick_2() {
         let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
         let mut alu = ALU::new(registers.f.clone());
         let memory = Arc::new(Mutex::new(MemoryController::new()));
 
-        memory.lock().set(0xC000, 0x34);
-        memory.lock().set(0xC001, 0x12);
+        memory.lock().set(0xC000, 0x12);
 
         let mut instruction = LdSpNn { counter: 2, address: 0 };
 
-        let result1 = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
-        let result2 = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
-        let result3 = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
 
-        assert_eq!(false, result1);
-        assert_eq!(false, result2);
-        assert_eq!(true, result3);
+        assert_eq!(false, result);
+
+        assert_eq!(0x0012, instruction.address);
+    }
+
+    #[test]
+    fn load_high_byte_on_tick_1() {
+        let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
+        let mut alu = ALU::new(registers.f.clone());
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+
+        memory.lock().set(0xC000, 0x12);
+
+        let mut instruction = LdSpNn { counter: 1, address: 0 };
+
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+
+        assert_eq!(false, result);
+
+        assert_eq!(0x1200, instruction.address);
+    }
+
+    #[test]
+    fn update_sp_on_tick_0_and_get_next_instruction() {
+        let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
+        let mut alu = ALU::new(registers.f.clone());
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+
+        memory.lock().set(0xC000, 0x12);
+
+        let mut instruction = LdSpNn { counter: 0, address: 0x1234 };
+
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+
+        assert_eq!(true, result);
 
         assert_eq!(0x1234, registers.sp.get_value());
     }
