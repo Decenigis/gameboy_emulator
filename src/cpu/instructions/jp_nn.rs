@@ -6,16 +6,16 @@ use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
 
-pub struct JP {
+pub struct JpNn {
     counter: u8,
     address: u16
 }
 
-impl Instruction for JP {
+impl Instruction for JpNn {
 
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0xC3 {
-            return Some(Box::new(JP { counter: 2, address: 0 }))
+            return Some(Box::new(JpNn { counter: 2, address: 0 }))
         }
         None
     }
@@ -51,21 +51,21 @@ mod tests {
 
     #[test]
     fn from_opcode_returns_given_0xc3() {
-        let instruction = JP::from_opcode(&0xC3);
+        let instruction = JpNn::from_opcode(&0xC3);
 
         assert_eq!(true, instruction.is_some());
     }
 
     #[test]
     fn from_opcode_returns_none_given_non_0xc3() {
-        let instruction = JP::from_opcode(&0x00);
+        let instruction = JpNn::from_opcode(&0x00);
 
         assert_eq!(true, instruction.is_none());
     }
 
     #[test]
     fn get_opcode_returns_0xc3() {
-        let instruction = JP { counter: 0, address: 0 };
+        let instruction = JpNn { counter: 0, address: 0 };
 
         assert_eq!(0xC3, instruction.get_opcode());
     }
@@ -79,7 +79,7 @@ mod tests {
         memory.lock().set(0xC000, 0x34);
         memory.lock().set(0xC001, 0x12);
 
-        let mut instruction = JP { counter: 2, address: 0 };
+        let mut instruction = JpNn { counter: 2, address: 0 };
 
         let result1 = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
         let result2 = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);

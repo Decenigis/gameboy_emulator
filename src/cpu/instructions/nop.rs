@@ -5,13 +5,13 @@ use crate::cpu::instructions::instruction::Instruction;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
 
-pub struct NOP {}
+pub struct Nop {}
 
-impl Instruction for NOP {
+impl Instruction for Nop {
 
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0x00 {
-            return Some(Box::new(NOP {}))
+            return Some(Box::new(Nop {}))
         }
         None
     }
@@ -33,21 +33,21 @@ mod tests {
 
     #[test]
     fn from_opcode_returns_given_0x00() {
-        let instruction = NOP::from_opcode(&0x00);
+        let instruction = Nop::from_opcode(&0x00);
 
         assert_eq!(true, instruction.is_some());
     }
 
     #[test]
     fn from_opcode_returns_none_given_non_0x00() {
-        let instruction = NOP::from_opcode(&0x01);
+        let instruction = Nop::from_opcode(&0x01);
 
         assert_eq!(true, instruction.is_none());
     }
 
     #[test]
     fn get_opcode_returns_0x00() {
-        let instruction = NOP {};
+        let instruction = Nop {};
 
         assert_eq!(0x00, instruction.get_opcode());
     }
@@ -57,7 +57,7 @@ mod tests {
         let mut registers = Registers::new(0, 0, 0, 0, 0, 0);
         let mut alu = ALU::new(registers.f.clone());
 
-        let mut instruction = NOP {};
+        let mut instruction = Nop {};
 
         let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())) ,&mut false);
 

@@ -7,12 +7,13 @@ mod instruction;
 mod bad_instruction;
 
 mod nop; //0x00
-mod jp;  //0xC3
-mod di; //0xF3
+mod jp_nn;//0xC3
+mod di;  //0xF3
 
 pub use instruction::Instruction;
 pub use instruction::decode_instruction;
+use bad_instruction::BadInstruction;     
 
-pub use nop::NOP;//0x00
-use jp::JP;      //0xC3
-use di::DI;      //0xF3
+pub use nop::Nop;//0x00
+use jp_nn::JpNn;      //0xC3
+use di::Di;      //0xF3

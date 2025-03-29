@@ -2,7 +2,7 @@ use std::sync::Arc;
 use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::CPU;
-use crate::cpu::instructions::{decode_instruction, Instruction, NOP};
+use crate::cpu::instructions::{decode_instruction, Instruction, Nop};
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
@@ -29,7 +29,7 @@ impl CPU for GameBoyCPU {
 impl GameBoyCPU {
 
     pub fn new_with_nop() -> Self {
-        Self::new(Box::new(NOP {}))
+        Self::new(Box::new(Nop {}))
     }
 
     pub fn new(first_instruction: Box<dyn Instruction>) -> Self {

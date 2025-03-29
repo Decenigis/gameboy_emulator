@@ -5,13 +5,13 @@ use crate::cpu::instructions::Instruction;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
 
-pub struct DI {}
+pub struct Di {}
 
-impl Instruction for DI {
+impl Instruction for Di {
 
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0xF3 {
-            return Some(Box::new(DI {}))
+            return Some(Box::new(Di {}))
         }
         None
     }
@@ -35,21 +35,21 @@ mod tests {
 
     #[test]
     fn from_opcode_returns_given_0xf3() {
-        let instruction = DI::from_opcode(&0xF3);
+        let instruction = Di::from_opcode(&0xF3);
 
         assert_eq!(true, instruction.is_some());
     }
 
     #[test]
     fn from_opcode_returns_none_given_non_0xf3() {
-        let instruction = DI::from_opcode(&0x00);
+        let instruction = Di::from_opcode(&0x00);
 
         assert_eq!(true, instruction.is_none());
     }
 
     #[test]
     fn get_opcode_returns_0xf3() {
-        let instruction = DI {};
+        let instruction = Di {};
 
         assert_eq!(0xF3, instruction.get_opcode());
     }
@@ -59,7 +59,7 @@ mod tests {
         let mut registers = Registers::new(0, 0, 0, 0, 0, 0);
         let mut alu = ALU::new(registers.f.clone());
 
-        let mut instruction = DI {};
+        let mut instruction = Di {};
 
         let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())) ,&mut false);
 
@@ -71,7 +71,7 @@ mod tests {
         let mut registers = Registers::new(0, 0, 0, 0, 0, 0);
         let mut alu = ALU::new(registers.f.clone());
 
-        let mut instruction = DI {};
+        let mut instruction = Di {};
         let mut enable_interrupts = true;
 
         instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut enable_interrupts);
