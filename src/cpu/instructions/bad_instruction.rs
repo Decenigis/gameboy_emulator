@@ -22,7 +22,7 @@ impl Instruction for BadInstruction {
     }
 
     fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
-        println!("Bad instruction '{:#X}' at address '{:#X}", self.opcode, registers.pc.get_value().wrapping_sub(1));
+        println!("Bad instruction '{:#X}' at address '{:#X}'", self.opcode, registers.pc.get_value().wrapping_sub(1));
         false
     }
 }
