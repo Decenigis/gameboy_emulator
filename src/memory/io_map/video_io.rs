@@ -80,7 +80,7 @@ impl VideoIO {
             win_y:      0x00
         }
     }
-    
+
     pub fn get_lcd_ctrl(&self) -> u8 {
         self.lcd_ctrl
     }
@@ -99,6 +99,10 @@ impl VideoIO {
 
     pub fn get_ly(&self) -> u8 {
         self.ly
+    }
+
+    pub fn set_ly(&mut self, ly: u8) {
+        self.ly = ly;
     }
 
     pub fn _get_lyc(&self) -> u8 {

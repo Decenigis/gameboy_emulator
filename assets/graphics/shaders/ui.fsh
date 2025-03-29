@@ -24,7 +24,7 @@ bool useBank1(uint tileId) {
 
 void main()
 {
-	if (int(actualCoords.x) < draw_cutoff.x || int(actualCoords.y) < draw_cutoff.y) {
+	if (int(actualCoords.x) < draw_cutoff.x || int(actualCoords.y) != draw_cutoff.y) {
 		discard;
 	}
 

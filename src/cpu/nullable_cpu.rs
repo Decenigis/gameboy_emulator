@@ -14,9 +14,9 @@ pub struct NullableCPU {
     internal: Rc<RefCell<NullableCPUInternal>>
 }
 
-impl CPU for NullableCPUInternal {
+impl CPU for NullableCPU {
     fn clock(&mut self, _memory: Arc<Mutex<MemoryController>>) {
-        self.num_times_clocked += 1
+        self.internal.borrow_mut().num_times_clocked += 1
     }
 }
 

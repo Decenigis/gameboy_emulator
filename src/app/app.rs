@@ -13,6 +13,7 @@ use parking_lot::Mutex;
 use crate::cpu::{GameBoyCPU, CPU};
 use crate::memory::MemoryController;
 use crate::renderer::VideoProcessor;
+use crate::system::MainBoard;
 
 pub struct App {
     pub _args: Vec<String>,
@@ -79,7 +80,7 @@ impl App {
         };
 
         let memory_controller = Arc::new(Mutex::new(MemoryController::new()));
-        let mut cpu = GameBoyCPU::new_with_nop();
+        let cpu = Box::new(GameBoyCPU::new_with_nop());
 
         let rom_path = match self.get_rom_path() {
             Some(path) => path,
@@ -87,7 +88,7 @@ impl App {
         };
         memory_controller.lock().load_rom(&rom_path);
 
-        let mut video_processor = {
+        let video_processor = {
             let vram = memory_controller.lock().get_vram_arc();
             let video_io = memory_controller.lock().get_io_map().lock().get_video_io();
 
@@ -105,15 +106,17 @@ impl App {
                 video_io,
             ).unwrap()
         };
-        
-        
+
+        let mut main_board = MainBoard::new(
+            cpu,
+            memory_controller,
+            video_processor
+        );
 
         let mut _frame: u64 = 0;
 
         while !self.gl_handler.borrow().wind_should_close() {
             self.framebuffer.clear();
-
-            cpu.clock(memory_controller.clone());
 
             for event in self.gl_handler.borrow_mut().handle_events() {
                 match event {
@@ -125,11 +128,10 @@ impl App {
 
             self.framebuffer.bind_draw_target();
 
-            video_processor.try_update_graphics_data();
 
             match self.shader_manager.bind("UI".to_string()) {
                 Ok(shader) => {
-                    video_processor.draw(shader).unwrap();
+                    main_board.perform_frame(shader)
                 }
                 Err(_) => return
             };

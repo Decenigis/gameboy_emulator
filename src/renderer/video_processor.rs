@@ -20,14 +20,14 @@ pub struct VideoProcessor {
     map_bank_1: Texture2Du8,
 
     background_renderable: Box<dyn Renderable<Vertex2d>>,
-    
+
     vram: Arc<Mutex<VRAM>>,
     video_io: Arc<Mutex<VideoIO>>
 }
 
-struct Mask {}
+pub struct LCDCMask {}
 
-impl Mask {
+impl LCDCMask {
     pub const LCD_ENABLE: u8 = 0x80;
     pub const WIN_TILE_BANK: u8 = 0x40;
     pub const WIN_ENABLE: u8 = 0x20;
@@ -43,7 +43,7 @@ impl Mask {
 }
 
 impl VideoProcessor {
-    
+
     pub fn new(
         tilemap_bank_0: Texture3Du8,
         tilemap_bank_1: Texture3Du8,
@@ -57,7 +57,7 @@ impl VideoProcessor {
         vram: Arc<Mutex<VRAM>>,
         video_io: Arc<Mutex<VideoIO>>
     )
-        -> Result<VideoProcessor, RendererError> 
+        -> Result<VideoProcessor, RendererError>
     {
         match background_renderable.initialise(&vec![
             Vertex2d { x: 0.0, y: 0.0, u: 0.0, v: 0.0},
@@ -89,7 +89,7 @@ impl VideoProcessor {
 
     pub fn try_update_graphics_data(&mut self) {
         let mut vram = self.vram.lock();
-        
+
         match vram.get_tile_bank_0_if_stale() {
             None => {}
             Some(data) => match self.tilemap_bank_0.set_data(data, ivec3(2, 8, 128)) {
@@ -154,15 +154,15 @@ impl VideoProcessor {
 
     fn bind_textures_for_background(&self, lcd_ctrl: u8) {
         self.bind_textures_to_units(
-            Mask::mask(lcd_ctrl, Mask::WIN_AND_BG_MAP),
-            Mask::mask(lcd_ctrl, Mask::BG_TILE_BANK)
+            LCDCMask::mask(lcd_ctrl, LCDCMask::WIN_AND_BG_MAP),
+            LCDCMask::mask(lcd_ctrl, LCDCMask::BG_TILE_BANK)
         )
     }
 
     fn bind_textures_for_window(&self, lcd_ctrl: u8) {
         self.bind_textures_to_units(
-            Mask::mask(lcd_ctrl, Mask::WIN_AND_BG_MAP),
-            Mask::mask(lcd_ctrl, Mask::WIN_TILE_BANK)
+            LCDCMask::mask(lcd_ctrl, LCDCMask::WIN_AND_BG_MAP),
+            LCDCMask::mask(lcd_ctrl, LCDCMask::WIN_TILE_BANK)
         )
     }
 
@@ -180,7 +180,7 @@ impl VideoProcessor {
 
             self.set_shader_values(shader,
                                    &ivec2(video_io_guard.get_bg_x() as i32, video_io_guard.get_bg_y() as i32),
-                                   &ivec2(0, 0),
+                                   &ivec2(0, video_io_guard.get_ly() as i32),
                                    &video_io_guard.get_bg_pal()
             );
             self.bind_textures_for_background(video_io_guard.get_lcd_ctrl());
@@ -216,11 +216,11 @@ impl VideoProcessor {
             video_io_guard.get_lcd_ctrl().clone()
         };
 
-        if Mask::mask(lcd_ctrl, Mask::LCD_ENABLE) {
-            if Mask::mask(lcd_ctrl, Mask::BG_ENABLE) {
+        if LCDCMask::mask(lcd_ctrl, LCDCMask::LCD_ENABLE) {
+            if LCDCMask::mask(lcd_ctrl, LCDCMask::BG_ENABLE) {
                 self.draw_background(shader)?;
             }
-            if Mask::mask(lcd_ctrl, Mask::WIN_ENABLE) {
+            if LCDCMask::mask(lcd_ctrl, LCDCMask::WIN_ENABLE) {
                 self.draw_window(shader)?;
             }
         }
@@ -245,7 +245,7 @@ mod tests {
     use parking_lot::Mutex;
     use crate::memory::io_map::VideoIO;
     use crate::memory::{MemoryTrait, VRAM};
-    use crate::renderer::video_processor::Mask;
+    use crate::renderer::video_processor::LCDCMask;
     use crate::renderer::VideoProcessor;
 
 
@@ -349,7 +349,7 @@ mod tests {
         tile_bank_1.expect_set_data().times(1).returning(|_, _| Ok(()));
 
         let mut video_processor = VideoProcessor::new(
-            MockTexture3Du8::default(), tile_bank_1, MockTexture3Du8::default(), 
+            MockTexture3Du8::default(), tile_bank_1, MockTexture3Du8::default(),
             MockTexture2Du8::default(), MockTexture2Du8::default(),
             get_generic_renderable(),
             vram.clone(),
@@ -436,8 +436,8 @@ mod tests {
             Arc::new(Mutex::new(VRAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
-        video_processor.bind_textures_for_background(Mask::LCD_ENABLE);
-        video_processor.bind_textures_for_window(Mask::LCD_ENABLE);
+        video_processor.bind_textures_for_background(LCDCMask::LCD_ENABLE);
+        video_processor.bind_textures_for_window(LCDCMask::LCD_ENABLE);
     }
 
     #[test]
@@ -456,8 +456,8 @@ mod tests {
             Arc::new(Mutex::new(VRAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
-        video_processor.bind_textures_for_background(Mask::LCD_ENABLE | Mask::WIN_AND_BG_MAP);
-        video_processor.bind_textures_for_window(Mask::LCD_ENABLE | Mask::WIN_AND_BG_MAP);
+        video_processor.bind_textures_for_background(LCDCMask::LCD_ENABLE | LCDCMask::WIN_AND_BG_MAP);
+        video_processor.bind_textures_for_window(LCDCMask::LCD_ENABLE | LCDCMask::WIN_AND_BG_MAP);
     }
 
     #[test]
@@ -476,11 +476,11 @@ mod tests {
             Arc::new(Mutex::new(VRAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
-        video_processor.bind_textures_for_background(Mask::LCD_ENABLE);
-        video_processor.bind_textures_for_background(Mask::LCD_ENABLE | Mask::WIN_AND_BG_MAP);
+        video_processor.bind_textures_for_background(LCDCMask::LCD_ENABLE);
+        video_processor.bind_textures_for_background(LCDCMask::LCD_ENABLE | LCDCMask::WIN_AND_BG_MAP);
 
-        video_processor.bind_textures_for_window(Mask::LCD_ENABLE);
-        video_processor.bind_textures_for_window(Mask::LCD_ENABLE | Mask::WIN_AND_BG_MAP);
+        video_processor.bind_textures_for_window(LCDCMask::LCD_ENABLE);
+        video_processor.bind_textures_for_window(LCDCMask::LCD_ENABLE | LCDCMask::WIN_AND_BG_MAP);
     }
 
     #[test]
@@ -499,7 +499,7 @@ mod tests {
             Arc::new(Mutex::new(VRAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
-        video_processor.bind_textures_for_background(Mask::LCD_ENABLE);
+        video_processor.bind_textures_for_background(LCDCMask::LCD_ENABLE);
     }
 
     #[test]
@@ -518,7 +518,7 @@ mod tests {
             Arc::new(Mutex::new(VRAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
-        video_processor.bind_textures_for_background(Mask::LCD_ENABLE | Mask::BG_TILE_BANK);
+        video_processor.bind_textures_for_background(LCDCMask::LCD_ENABLE | LCDCMask::BG_TILE_BANK);
     }
 
     #[test]
@@ -537,7 +537,7 @@ mod tests {
             Arc::new(Mutex::new(VRAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
-        video_processor.bind_textures_for_window(Mask::LCD_ENABLE);
+        video_processor.bind_textures_for_window(LCDCMask::LCD_ENABLE);
     }
 
     #[test]
@@ -556,7 +556,7 @@ mod tests {
             Arc::new(Mutex::new(VRAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
-        video_processor.bind_textures_for_window(Mask::LCD_ENABLE | Mask::WIN_TILE_BANK);
+        video_processor.bind_textures_for_window(LCDCMask::LCD_ENABLE | LCDCMask::WIN_TILE_BANK);
     }
 
     #[test]
@@ -712,7 +712,7 @@ mod tests {
             NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
         );
 
-        video_io.lock().set(0xFF40, Mask::LCD_ENABLE | Mask::BG_ENABLE);
+        video_io.lock().set(0xFF40, LCDCMask::LCD_ENABLE | LCDCMask::BG_ENABLE);
 
         let renderable = Box::new(NullableRenderable::<Vertex2d>::new::<Vertex2d>(
             Rc::new(RefCell::new(false)),
@@ -745,7 +745,7 @@ mod tests {
             NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
         );
 
-        video_io.lock().set(0xFF40, Mask::LCD_ENABLE | Mask::WIN_ENABLE);
+        video_io.lock().set(0xFF40, LCDCMask::LCD_ENABLE | LCDCMask::WIN_ENABLE);
 
         let renderable = Box::new(NullableRenderable::<Vertex2d>::new::<Vertex2d>(
             Rc::new(RefCell::new(false)),
@@ -778,7 +778,7 @@ mod tests {
             NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
         );
 
-        video_io.lock().set(0xFF40, Mask::LCD_ENABLE | Mask::WIN_ENABLE | Mask::BG_ENABLE);
+        video_io.lock().set(0xFF40, LCDCMask::LCD_ENABLE | LCDCMask::WIN_ENABLE | LCDCMask::BG_ENABLE);
 
         let renderable = Box::new(NullableRenderable::<Vertex2d>::new::<Vertex2d>(
             Rc::new(RefCell::new(false)),
