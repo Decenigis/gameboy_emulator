@@ -4,6 +4,7 @@ use crate::cpu::alu::ALU;
 use crate::cpu::instructions::bad_instruction::BadInstruction;
 use crate::cpu::instructions::NOP;
 use crate::cpu::instructions::DI;
+use crate::cpu::instructions::JP;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
 
@@ -28,6 +29,7 @@ pub trait Instruction {
 
 pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     return_if_is_instruction!(NOP, opcode); //0x00
+    return_if_is_instruction!(JP, opcode); //0xC3
     return_if_is_instruction!(DI, opcode); //0xF3
 
     //if fallen through, return a generic bad instruction

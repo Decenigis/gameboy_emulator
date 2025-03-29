@@ -2,6 +2,7 @@ use std::sync::Arc;
 use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::instruction::Instruction;
+use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
 
@@ -20,8 +21,8 @@ impl Instruction for BadInstruction {
         self.opcode
     }
 
-    fn act(&mut self, _registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
-        println!("Bad instruction: {:#X}", self.opcode);
+    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+        println!("Bad instruction '{:#X}' at address '{:#X}", self.opcode, registers.pc.get_value().wrapping_sub(1));
         false
     }
 }

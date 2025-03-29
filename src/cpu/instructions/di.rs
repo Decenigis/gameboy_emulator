@@ -41,14 +41,14 @@ mod tests {
     }
 
     #[test]
-    fn from_opcode_returns_none_given_non_0x00() {
+    fn from_opcode_returns_none_given_non_0xf3() {
         let instruction = DI::from_opcode(&0x00);
 
         assert_eq!(true, instruction.is_none());
     }
 
     #[test]
-    fn get_opcode_returns_0xF3() {
+    fn get_opcode_returns_0xf3() {
         let instruction = DI {};
 
         assert_eq!(0xF3, instruction.get_opcode());
