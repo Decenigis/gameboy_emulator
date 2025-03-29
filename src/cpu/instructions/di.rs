@@ -34,7 +34,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn from_opcode_returns_given_0xF3() {
+    fn from_opcode_returns_given_0xf3() {
         let instruction = DI::from_opcode(&0xF3);
 
         assert_eq!(true, instruction.is_some());
