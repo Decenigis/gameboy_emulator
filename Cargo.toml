@@ -7,7 +7,7 @@ edition = "2021"
 opt-level = 3
 
 [dependencies]
-dec_gl = { git = "https://github.com/Decenigis/dec_gl.git", version = "0.3.0" }
+dec_gl = { git = "https://github.com/Decenigis/dec_gl.git", version = "0.3.2" }
 gl = "*"
 glfw = "*"
 exitcode = "1.1.2"

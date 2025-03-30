@@ -1,16 +1,17 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
-use dec_gl::{FrameBuffer, GLHandler, UICamera, Vertex2d};
+use dec_gl::{GLHandler, UICamera, Vertex2d};
+use dec_gl::framebuffer::SimpleFramebuffer;
 use dec_gl::renderable::GlRenderable;
 use dec_gl::shader::{GLShaderProgram, ShaderManager};
 use mockall_double::double;
 #[double]
 use dec_gl::texture::{Texture2Du8, Texture3Du8};
-use dec_gl::types::{ivec2, Vec3};
+use dec_gl::types::{ivec2, vec4, Vec3};
 use dialog::{DialogBox, FileSelection};
 use parking_lot::Mutex;
-use crate::cpu::{GameBoyCPU, CPU};
+use crate::cpu::GameBoyCPU;
 use crate::memory::MemoryController;
 use crate::renderer::VideoProcessor;
 use crate::system::MainBoard;
@@ -21,7 +22,7 @@ pub struct App {
     camera: UICamera,
 
     gl_handler: Rc<RefCell<GLHandler>>,
-    framebuffer: FrameBuffer,
+    framebuffer: SimpleFramebuffer,
     shader_manager: ShaderManager
 }
 
@@ -42,7 +43,7 @@ impl App {
              Box::new(GLShaderProgram::load_shader_program("assets/graphics/shaders/ui", "UI", false).unwrap())
          ).unwrap();
 
-         let framebuffer = FrameBuffer::new(window_size.x as i32, window_size.y as i32).unwrap();
+         let framebuffer = SimpleFramebuffer::new(window_size.x as i32, window_size.y as i32).unwrap();
 
          let camera = UICamera::new(ivec2(160, 144), -1.0, 1.0);
 
@@ -61,6 +62,8 @@ impl App {
 
 
     pub fn run (&mut self) {
+        self.framebuffer.set_clear_colour(vec4(GB_COLUR_0.x, GB_COLUR_0.y, GB_COLUR_0.z, 1.0));
+
         match self.shader_manager.bind("UI".to_string()) {
             Ok(shader) => {
                 shader.set_uniform("pv".to_string(), &self.camera.get_matrix());
@@ -136,7 +139,7 @@ impl App {
                 Err(_) => return
             };
 
-            FrameBuffer::bind_default_framebuffer();
+            SimpleFramebuffer::bind_default_framebuffer();
             self.framebuffer.blit(
                 self.gl_handler.borrow().get_window().get_window_size(),
                 gl::COLOR_BUFFER_BIT,
