@@ -21,8 +21,6 @@ impl Instruction for XorA {
     }
 
     fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, enable_interrupts: &mut bool) -> bool {
-        *enable_interrupts = false;
-
         alu.xor_internal(registers.a.clone(), registers.a.clone());
 
         true
