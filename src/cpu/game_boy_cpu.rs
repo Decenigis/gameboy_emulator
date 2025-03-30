@@ -3,6 +3,7 @@ use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::CPU;
 use crate::cpu::instructions::{decode_instruction, Instruction, Nop};
+use crate::cpu::interrupt::Interrupt;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
@@ -25,7 +26,7 @@ impl CPU for GameBoyCPU {
         }
     }
 
-    fn try_interrupt(&mut self, memory: Arc<Mutex<MemoryController>>, address: u16) {
+    fn try_interrupt(&mut self, memory: Arc<Mutex<MemoryController>>, interrupt: Interrupt) {
         todo!()
     }
 }

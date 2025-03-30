@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use dec_gl::shader::ShaderProgram;
 use parking_lot::Mutex;
-use crate::cpu::CPU;
+use crate::cpu::{Interrupt, CPU};
 use crate::memory::MemoryController;
 use crate::renderer::VideoProcessor;
 use crate::system::clock_event::ClockEvent;
@@ -38,7 +38,7 @@ impl EventHandler {
                 return true
             }
             ClockEvent::VBlankInterrupt => {
-                //will implement later
+                cpu.try_interrupt(memory.clone(), Interrupt::VBlank);
             }
         }
         false
@@ -182,5 +182,33 @@ mod tests { //these are not very nice
         let send_frame = event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut bacgkround_shader, &event);
 
         assert_eq!(true, send_frame);
+    }
+
+    #[test]
+    fn vblank_performs_vblank_interrupt() {
+        let mut event_handler = EventHandler::new();
+        let interrupt = Rc::new(RefCell::new(None));
+        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new( Rc::new(RefCell::new(0)),  interrupt.clone()));
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+
+        let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
+
+        let vram = memory.lock().get_vram_arc();
+        let video_io = memory.lock().get_io_map().lock().get_video_io();
+
+        let mut video_processor = VideoProcessor::new(
+            tile_bank_0, tile_bank_1, tile_bank_2,
+            map_bank_0, map_bank_1,
+            get_generic_renderable(),
+            vram,
+            video_io).unwrap();
+
+        let mut bacgkround_shader: Box<dyn ShaderProgram> = Box::new(NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false))));
+
+        let event = ClockEvent::VBlankInterrupt;
+
+        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut bacgkround_shader, &event);
+
+        assert_eq!(Some(Interrupt::VBlank), *interrupt.borrow());
     }
 }
