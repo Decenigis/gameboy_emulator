@@ -95,7 +95,7 @@ mod tests { //these are not very nice
     fn cpu_clock_event_clocks_cpu() {
         let mut event_handler = EventHandler::new();
         let number_of_times_clocked = Rc::new(RefCell::new(0));
-        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new(number_of_times_clocked.clone()));
+        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new(number_of_times_clocked.clone(), Rc::new(RefCell::new(None))));
         let memory = Arc::new(Mutex::new(MemoryController::new()));
 
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
@@ -122,8 +122,7 @@ mod tests { //these are not very nice
     #[test]
     fn draw_line_event_draws_line() {
         let mut event_handler = EventHandler::new();
-        let number_of_times_clocked = Rc::new(RefCell::new(0));
-        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new(number_of_times_clocked.clone()));
+        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new( Rc::new(RefCell::new(0)),  Rc::new(RefCell::new(None))));
         let memory = Arc::new(Mutex::new(MemoryController::new()));
 
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
@@ -161,8 +160,7 @@ mod tests { //these are not very nice
     #[test]
     fn send_frame_returns_true() {
         let mut event_handler = EventHandler::new();
-        let number_of_times_clocked = Rc::new(RefCell::new(0));
-        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new(number_of_times_clocked.clone()));
+        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new( Rc::new(RefCell::new(0)),  Rc::new(RefCell::new(None))));
         let memory = Arc::new(Mutex::new(MemoryController::new()));
 
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();

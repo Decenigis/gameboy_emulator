@@ -24,6 +24,10 @@ impl CPU for GameBoyCPU {
             self.load_next_instruction(memory)
         }
     }
+
+    fn try_interrupt(&mut self, memory: Arc<Mutex<MemoryController>>, address: u16) {
+        todo!()
+    }
 }
 
 impl GameBoyCPU {
