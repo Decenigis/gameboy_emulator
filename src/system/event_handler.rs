@@ -56,7 +56,7 @@ mod tests { //these are not very nice
     use dec_gl::shader::NullableShaderProgram;
     use dec_gl::texture::{MockTexture2Du8, MockTexture3Du8};
     use dec_gl::Vertex2d;
-    use crate::cpu::{NullableCPU, NullableCPUInternal};
+    use crate::cpu::NullableCPU;
     use crate::memory::MemoryTrait;
     use super::*;
 
@@ -94,8 +94,8 @@ mod tests { //these are not very nice
     #[test]
     fn cpu_clock_event_clocks_cpu() {
         let mut event_handler = EventHandler::new();
-        let nullable_cpu_internal = Rc::new(RefCell::new(NullableCPUInternal { num_times_clocked: 0 }));
-        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new(nullable_cpu_internal.clone()));
+        let number_of_times_clocked = Rc::new(RefCell::new(0));
+        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new(number_of_times_clocked.clone()));
         let memory = Arc::new(Mutex::new(MemoryController::new()));
 
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
@@ -116,14 +116,14 @@ mod tests { //these are not very nice
 
         event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut bacgkround_shader, &event);
 
-        assert_eq!(1, nullable_cpu_internal.borrow().num_times_clocked);
+        assert_eq!(1, *number_of_times_clocked.borrow());
     }
 
     #[test]
     fn draw_line_event_draws_line() {
         let mut event_handler = EventHandler::new();
-        let nullable_cpu_internal = Rc::new(RefCell::new(NullableCPUInternal { num_times_clocked: 0 }));
-        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new(nullable_cpu_internal.clone()));
+        let number_of_times_clocked = Rc::new(RefCell::new(0));
+        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new(number_of_times_clocked.clone()));
         let memory = Arc::new(Mutex::new(MemoryController::new()));
 
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
@@ -161,8 +161,8 @@ mod tests { //these are not very nice
     #[test]
     fn send_frame_returns_true() {
         let mut event_handler = EventHandler::new();
-        let nullable_cpu_internal = Rc::new(RefCell::new(NullableCPUInternal { num_times_clocked: 0 }));
-        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new(nullable_cpu_internal.clone()));
+        let number_of_times_clocked = Rc::new(RefCell::new(0));
+        let mut cpu: Box<dyn CPU> = Box::new(NullableCPU::new(number_of_times_clocked.clone()));
         let memory = Arc::new(Mutex::new(MemoryController::new()));
 
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();

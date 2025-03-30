@@ -12,4 +12,3 @@ mod nullable_cpu;
 pub use cpu::CPU;
 pub use game_boy_cpu::GameBoyCPU;
 pub use nullable_cpu::NullableCPU;
-pub use nullable_cpu::NullableCPUInternal;

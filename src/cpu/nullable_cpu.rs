@@ -1,29 +1,28 @@
 use std::cell::RefCell;
+use std::ops::Add;
 use std::rc::Rc;
 use std::sync::Arc;
 use parking_lot::Mutex;
 use crate::cpu::CPU;
 use crate::memory::MemoryController;
 
-pub struct NullableCPUInternal {
-    pub num_times_clocked: u32
-}
 
 
 pub struct NullableCPU {
-    internal: Rc<RefCell<NullableCPUInternal>>
+    pub num_times_clocked: Rc<RefCell<u32>>
 }
 
 impl CPU for NullableCPU {
     fn clock(&mut self, _memory: Arc<Mutex<MemoryController>>) {
-        self.internal.borrow_mut().num_times_clocked += 1
+        let result = self.num_times_clocked.borrow().add(1);
+        self.num_times_clocked.replace(result);
     }
 }
 
 impl NullableCPU {
-    pub fn new(internal: Rc<RefCell<NullableCPUInternal>>) -> Self {
+    pub fn new(num_times_clocked: Rc<RefCell<u32>>) -> Self {
         Self {
-            internal
+            num_times_clocked
         }
     }
 }
