@@ -27,7 +27,20 @@ impl CPU for GameBoyCPU {
     }
 
     fn try_interrupt(&mut self, memory: Arc<Mutex<MemoryController>>, interrupt: Interrupt) {
-        todo!()
+        if !self.enable_interrupts {
+            return;
+        }
+
+        let ie_ = memory.lock().get(0xFFFF);
+        let if_ = memory.lock().get(0xFF0F);
+
+        if (ie_ & interrupt.get_bit_mask()) == 0 {
+            return;
+        }
+
+        self.registers.pc.set_value(interrupt.get_address());
+
+        memory.lock().set(0xFF0F, if_ | interrupt.get_bit_mask());
     }
 }
 
@@ -125,5 +138,50 @@ mod tests {
         cpu.clock(memory.clone());
 
         assert_eq!(0x101, cpu.registers.pc.get_value()); //next instruction will be RST 38 in uninitialised ROM space
+    }
+
+    #[test]
+    fn interrupt_properly() {
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+        memory.lock().set(0xFFFF, 0x01);
+        memory.lock().set(0xFF0F, 0x00);
+
+        let mut cpu = GameBoyCPU::new_with_nop();
+
+        cpu.enable_interrupts = true;
+
+        cpu.try_interrupt(memory.clone(), Interrupt::VBlank);
+
+        assert_eq!(0x0040, cpu.registers.pc.get_value());
+    }
+
+    #[test]
+    fn does_not_interrupt_when_interrupts_disabled() {
+        let expected_pc = 0x100;
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+        memory.lock().set(0xFFFF, 0x01);
+        memory.lock().set(0xFF0F, 0x00);
+        let mut cpu = GameBoyCPU::new_with_nop();
+        cpu.registers.pc.set_value(expected_pc);
+        cpu.enable_interrupts = false;
+
+        cpu.try_interrupt(memory.clone(), Interrupt::VBlank);
+
+        assert_eq!(expected_pc, cpu.registers.pc.get_value());
+    }
+
+    #[test]
+    fn does_not_interrupt_when_ie_not_set() {
+        let expected_pc = 0x100;
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+        memory.lock().set(0xFFFF, 0x00);
+        memory.lock().set(0xFF0F, 0x00);
+        let mut cpu = GameBoyCPU::new_with_nop();
+        cpu.registers.pc.set_value(expected_pc);
+        cpu.enable_interrupts = true;
+
+        cpu.try_interrupt(memory.clone(), Interrupt::VBlank);
+
+        assert_eq!(expected_pc, cpu.registers.pc.get_value());
     }
 }
