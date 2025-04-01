@@ -12,7 +12,8 @@ pub struct GameBoyCPU {
     registers: Registers,
     alu: ALU,
     enable_interrupts: bool,
-    current_instruction: Box<dyn Instruction>
+    current_instruction: Box<dyn Instruction>,
+    interrupt: Option<Interrupt>,
 }
 
 
@@ -38,7 +39,7 @@ impl CPU for GameBoyCPU {
             return;
         }
 
-        self.registers.pc.set_value(interrupt.get_address());
+        self.interrupt = Some(interrupt);
 
         memory.lock().set(0xFF0F, if_ | interrupt.get_bit_mask());
     }
@@ -66,11 +67,20 @@ impl GameBoyCPU {
             alu: ALU::new(f),
             enable_interrupts: false,
             current_instruction: first_instruction,
+            interrupt: None,
         }
     }
 
 
     fn load_next_instruction (&mut self, memory: Arc<Mutex<MemoryController>>) {
+        match self.interrupt { //this prevents interrupting mid-instruction
+            Some(interrupt) => {
+                self.interrupt = None;
+                self.registers.pc.set_value(interrupt.get_address());
+            }
+            None => {}
+        }
+        
         let opcode = memory.lock().get(self.registers.pc.get_value());
 
         self.current_instruction = decode_instruction(&opcode);
@@ -151,8 +161,9 @@ mod tests {
         cpu.enable_interrupts = true;
 
         cpu.try_interrupt(memory.clone(), Interrupt::VBlank);
+        cpu.clock(memory.clone());
 
-        assert_eq!(0x0040, cpu.registers.pc.get_value());
+        assert_eq!(0x0041, cpu.registers.pc.get_value()); 
     }
 
     #[test]
