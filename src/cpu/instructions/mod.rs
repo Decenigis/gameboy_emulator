@@ -8,6 +8,7 @@ mod bad_instruction;
 
 mod nop; //0x00
 mod ld_bc_nn; //0x01
+mod dec_bc; //0x0B
 mod ld_hl_nn; //0x21
 mod inc_hl; //0x23
 mod ld_sp_nn; //0x31
@@ -29,6 +30,7 @@ use bad_instruction::BadInstruction;
 
 pub use nop::Nop;       //0x00
 use ld_bc_nn::LdBcNn;   //0x01
+use dec_bc::DecBc;      //0x0B
 use ld_hl_nn::LdHlNn;   //0x21
 use inc_hl::IncHl;      //0x23
 use ld_sp_nn::LdSpNn;   //0x31
