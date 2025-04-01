@@ -15,12 +15,11 @@ mod ld_sp_nn; //0x31
 mod ld_hl_n; //0x36
 mod ld_a_c; //0x79
 mod xor_a; //0xAF
+mod or_b; //0xB0
 mod jp_nn; //0xC3
 mod call_nn; //0xCD
 mod ldh_n_a; //0xE0
-mod di;
-mod or_b;
-//0xF3
+mod di; //0xF3
 
 
 
@@ -40,6 +39,7 @@ use ld_sp_nn::LdSpNn;   //0x31
 use ld_hl_n::LdHlN;     //0x36
 use ld_a_c::LdAC;       //0x79
 use xor_a::XorA;        //0xAF
+use or_b::OrB;          //0xB0
 use jp_nn::JpNn;        //0xC3
 use call_nn::CallNn;    //0xCD
 use ldh_n_a::LdhNA;     //0xE0
