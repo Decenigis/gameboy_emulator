@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use parking_lot::Mutex;
-use crate::memory::io_map::{IOMap, VideoIO};
+use crate::memory::io_map::VideoIO;
 use crate::renderer::LCDCMask;
 use crate::system::clock_event::ClockEvent;
 

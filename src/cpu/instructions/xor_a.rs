@@ -20,7 +20,7 @@ impl Instruction for XorA {
         0xAF
     }
 
-    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
         alu.xor_internal(registers.a.clone(), registers.a.clone());
 
         true

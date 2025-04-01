@@ -26,7 +26,7 @@ impl Instruction for LdhNA {
         0xE0
     }
 
-    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
         if self.counter == 2 {
             self.address = 0xFF00 + memory_controller.lock().get(registers.pc.get_value()) as u16;
             registers.pc.increment();

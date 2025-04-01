@@ -23,7 +23,7 @@ impl Instruction for LdAC {
         0x79
     }
 
-    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
         registers.a.borrow_mut().set_value(registers.c.borrow().get_value());
 
         true
