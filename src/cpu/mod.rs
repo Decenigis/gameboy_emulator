@@ -12,5 +12,6 @@ mod interrupt;
 
 pub use cpu::CPU;
 pub use game_boy_cpu::GameBoyCPU;
-//pub use nullable_cpu::NullableCPU;
+#[allow(unused)]
+pub use nullable_cpu::NullableCPU;
 pub use interrupt::Interrupt;

@@ -5,17 +5,17 @@ use crate::cpu::carry_trait::CarryTrait;
 use crate::cpu::register8::Register8;
 use crate::cpu::register::Register;
 
-const ZERO_FLAG: u8 = 7;        //Z
-const SUB_FLAG: u8 = 6;         //N
-const HALF_CARRY_FLAG: u8 = 5;  //H
-const CARRY_FLAG: u8 = 4;       //C
-
 pub struct ALU {
     flags: Rc<RefCell<Register8>>
 }
 
 
 impl ALU {
+
+    pub const ZERO_FLAG: u8 = 7;        //Z
+    pub const SUB_FLAG: u8 = 6;         //N
+    pub const HALF_CARRY_FLAG: u8 = 5;  //H
+    pub const CARRY_FLAG: u8 = 4;       //C
 
     pub fn new(flags: Rc<RefCell<Register8>>) -> Self {
         Self {
@@ -30,14 +30,14 @@ impl ALU {
     {
         let mut flags = self.flags.borrow_mut();
 
-        flags.set_bit(SUB_FLAG, false);
-        flags.set_bit(HALF_CARRY_FLAG, false);
-        flags.set_bit(CARRY_FLAG, false);
+        flags.set_bit(Self::SUB_FLAG, false);
+        flags.set_bit(Self::HALF_CARRY_FLAG, false);
+        flags.set_bit(Self::CARRY_FLAG, false);
 
         let value = (a.borrow().get_value() ^ b.borrow().get_value()).into();
         a.borrow_mut().set_value(value);
 
-        flags.set_bit(ZERO_FLAG, a.borrow().is_zero());
+        flags.set_bit(Self::ZERO_FLAG, a.borrow().is_zero());
     }
 
     pub fn or_internal<T: Register>(&self, a: Rc<RefCell<T>>, b: Rc<RefCell<T>>)
@@ -47,14 +47,14 @@ impl ALU {
     {
         let mut flags = self.flags.borrow_mut();
 
-        flags.set_bit(SUB_FLAG, false);
-        flags.set_bit(HALF_CARRY_FLAG, false);
-        flags.set_bit(CARRY_FLAG, false);
+        flags.set_bit(Self::SUB_FLAG, false);
+        flags.set_bit(Self::HALF_CARRY_FLAG, false);
+        flags.set_bit(Self::CARRY_FLAG, false);
 
         let value = (a.borrow().get_value() | b.borrow().get_value()).into();
         a.borrow_mut().set_value(value);
 
-        flags.set_bit(ZERO_FLAG, a.borrow().is_zero());
+        flags.set_bit(Self::ZERO_FLAG, a.borrow().is_zero());
     }
 
     fn add_internal<T: Register>(&self, a: &mut T, b: &T)
@@ -63,21 +63,21 @@ impl ALU {
         <T as Register>::ValueType: From<<<T as Register>::ValueType as Add>::Output>
     {
         let mut flags = self.flags.borrow_mut();
-        flags.set_bit(SUB_FLAG, false);
+        flags.set_bit(Self::SUB_FLAG, false);
 
         if a.get_value().add_carries(b.get_value()) {
-            flags.set_bit(CARRY_FLAG, true);
+            flags.set_bit(Self::CARRY_FLAG, true);
         }
 
         let shifted_a: T::ValueType = a.get_value().shl(4).into();
         let shifted_b: T::ValueType = b.get_value().shl(4).into();
         if shifted_a.add_carries(shifted_b) {
-            flags.set_bit(HALF_CARRY_FLAG, true);
+            flags.set_bit(Self::HALF_CARRY_FLAG, true);
         }
 
         a.wrapping_add(b);
 
-        flags.set_bit(ZERO_FLAG, a.is_zero());
+        flags.set_bit(Self::ZERO_FLAG, a.is_zero());
     }
 
     pub fn add<T: Register>(&self, a: &mut T, b: &T)
@@ -87,8 +87,8 @@ impl ALU {
     {
         {
             let mut flags = self.flags.borrow_mut();
-            flags.set_bit(CARRY_FLAG, false);
-            flags.set_bit(HALF_CARRY_FLAG, false);
+            flags.set_bit(Self::CARRY_FLAG, false);
+            flags.set_bit(Self::HALF_CARRY_FLAG, false);
         }
 
         self.add_internal(a, b);
@@ -99,7 +99,7 @@ impl ALU {
         <T as Register>::ValueType: From<<<T as Register>::ValueType as Shl<i32>>::Output>,
         <T as Register>::ValueType: From<<<T as Register>::ValueType as Add>::Output>,
     {
-        let carry = self.flags.borrow().get_bit(CARRY_FLAG);
+        let carry = self.flags.borrow().get_bit(Self::CARRY_FLAG);
 
         self.add(a, b); //Flags are reset by this method so no need for direct manipulation here
 
@@ -137,7 +137,7 @@ mod tests {
 
         alu.xor_internal(a.clone(), b);
 
-        assert_eq!(false, flags.borrow().get_bit(SUB_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::SUB_FLAG));
     }
 
     #[test]
@@ -149,7 +149,7 @@ mod tests {
 
         alu.xor_internal(a.clone(), b);
 
-        assert_eq!(false, flags.borrow().get_bit(HALF_CARRY_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
     }
 
     #[test]
@@ -161,7 +161,7 @@ mod tests {
 
         alu.xor_internal(a.clone(), b);
 
-        assert_eq!(false, flags.borrow().get_bit(CARRY_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::CARRY_FLAG));
     }
 
     #[test]
@@ -173,7 +173,7 @@ mod tests {
 
         alu.xor_internal(a.clone(), b);
 
-        assert_eq!(true, flags.borrow().get_bit(ZERO_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
 
     #[test]
@@ -185,7 +185,7 @@ mod tests {
 
         alu.xor_internal(a.clone(), b);
 
-        assert_eq!(false, flags.borrow().get_bit(ZERO_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
 
 
@@ -210,7 +210,7 @@ mod tests {
 
         alu.or_internal(a.clone(), b);
 
-        assert_eq!(false, flags.borrow().get_bit(SUB_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::SUB_FLAG));
     }
 
     #[test]
@@ -222,7 +222,7 @@ mod tests {
 
         alu.or_internal(a.clone(), b);
 
-        assert_eq!(false, flags.borrow().get_bit(HALF_CARRY_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
     }
 
     #[test]
@@ -234,7 +234,7 @@ mod tests {
 
         alu.or_internal(a.clone(), b);
 
-        assert_eq!(false, flags.borrow().get_bit(CARRY_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::CARRY_FLAG));
     }
 
     #[test]
@@ -246,7 +246,7 @@ mod tests {
 
         alu.or_internal(a.clone(), b);
 
-        assert_eq!(true, flags.borrow().get_bit(ZERO_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
 
     #[test]
@@ -258,10 +258,10 @@ mod tests {
 
         alu.or_internal(a.clone(), b);
 
-        assert_eq!(false, flags.borrow().get_bit(ZERO_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
 
-    
+
     #[test]
     fn adds_u8_no_flags () {
         let mut a = Register8::new(0x01);
@@ -293,11 +293,11 @@ mod tests {
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        flags.borrow_mut().set_bit(SUB_FLAG, true);
+        flags.borrow_mut().set_bit(ALU::SUB_FLAG, true);
 
         alu.add(&mut a, &b);
 
-        assert_eq!(flags.borrow().get_bit(SUB_FLAG), false);
+        assert_eq!(flags.borrow().get_bit(ALU::SUB_FLAG), false);
     }
 
     #[test]
@@ -309,7 +309,7 @@ mod tests {
 
         alu.add(&mut a, &b);
 
-        assert_eq!(true, flags.borrow().get_bit(ZERO_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
 
     #[test]
@@ -321,7 +321,7 @@ mod tests {
 
         alu.add(&mut a, &b);
 
-        assert_eq!(false, flags.borrow().get_bit(ZERO_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
 
     #[test]
@@ -333,7 +333,7 @@ mod tests {
 
         alu.add(&mut a, &b);
 
-        assert_eq!(true, flags.borrow().get_bit(HALF_CARRY_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
     }
 
     #[test]
@@ -345,7 +345,7 @@ mod tests {
 
         alu.add(&mut a, &b);
 
-        assert_eq!(false, flags.borrow().get_bit(HALF_CARRY_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
     }
 
     #[test]
@@ -357,7 +357,7 @@ mod tests {
 
         alu.add(&mut a, &b);
 
-        assert_eq!(true, flags.borrow().get_bit(HALF_CARRY_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
     }
 
     #[test]
@@ -369,7 +369,7 @@ mod tests {
 
         alu.add(&mut a, &b);
 
-        assert_eq!(false, flags.borrow().get_bit(HALF_CARRY_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
     }
 
     #[test]
@@ -381,7 +381,7 @@ mod tests {
 
         alu.add(&mut a, &b);
 
-        assert_eq!(flags.borrow().get_bit(CARRY_FLAG), true);
+        assert_eq!(flags.borrow().get_bit(ALU::CARRY_FLAG), true);
     }
 
     #[test]
@@ -391,7 +391,7 @@ mod tests {
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        flags.borrow_mut().set_bit(CARRY_FLAG, false);
+        flags.borrow_mut().set_bit(ALU::CARRY_FLAG, false);
         alu.adc(&mut a, &b);
 
         assert_eq!(0x03, a.get_value());
@@ -404,7 +404,7 @@ mod tests {
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        flags.borrow_mut().set_bit(CARRY_FLAG, true);
+        flags.borrow_mut().set_bit(ALU::CARRY_FLAG, true);
         alu.adc(&mut a, &b);
 
         assert_eq!(0x04, a.get_value());
@@ -417,10 +417,10 @@ mod tests {
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        flags.borrow_mut().set_bit(CARRY_FLAG, true);
+        flags.borrow_mut().set_bit(ALU::CARRY_FLAG, true);
         alu.adc(&mut a, &b);
 
-        assert_eq!(false, flags.borrow().get_bit(CARRY_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::CARRY_FLAG));
     }
 
     #[test]
@@ -430,10 +430,10 @@ mod tests {
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        flags.borrow_mut().set_bit(CARRY_FLAG, true);
+        flags.borrow_mut().set_bit(ALU::CARRY_FLAG, true);
         alu.adc(&mut a, &b);
 
-        assert_eq!(true, flags.borrow().get_bit(CARRY_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::CARRY_FLAG));
     }
 
     #[test]
@@ -445,10 +445,10 @@ mod tests {
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        flags.borrow_mut().set_bit(CARRY_FLAG, true);
+        flags.borrow_mut().set_bit(ALU::CARRY_FLAG, true);
         alu.adc(&mut a, &b);
 
-        assert_eq!(true, flags.borrow().get_bit(CARRY_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::CARRY_FLAG));
     }
 
     #[test]
@@ -458,10 +458,10 @@ mod tests {
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        flags.borrow_mut().set_bit(CARRY_FLAG, true);
+        flags.borrow_mut().set_bit(ALU::CARRY_FLAG, true);
         alu.adc(&mut a, &b);
 
-        assert_eq!(true, flags.borrow().get_bit(HALF_CARRY_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
     }
 
     #[test]
@@ -471,10 +471,10 @@ mod tests {
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        flags.borrow_mut().set_bit(CARRY_FLAG, true);
+        flags.borrow_mut().set_bit(ALU::CARRY_FLAG, true);
         alu.adc(&mut a, &b);
 
-        assert_eq!(true, flags.borrow().get_bit(HALF_CARRY_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
     }
 
 
@@ -485,9 +485,9 @@ mod tests {
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        flags.borrow_mut().set_bit(CARRY_FLAG, true);
+        flags.borrow_mut().set_bit(ALU::CARRY_FLAG, true);
         alu.adc(&mut a, &b);
 
-        assert_eq!(true, flags.borrow().get_bit(ZERO_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
 }

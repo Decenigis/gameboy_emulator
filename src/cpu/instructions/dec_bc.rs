@@ -43,7 +43,6 @@ impl Instruction for DecBc {
 #[cfg(test)]
 mod tests {
     use crate::cpu::register::Register;
-    use crate::memory::MemoryTrait;
     use super::*;
 
     #[test]
