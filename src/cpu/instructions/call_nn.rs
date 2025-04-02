@@ -34,11 +34,10 @@ impl Instruction for CallNn {
             registers.pc.increment();
         }
         else if self.counter == 1 {
-            memory_controller.lock().set(registers.sp.get_value() - 2, (registers.pc.get_value() & 0xFF) as u8);
-            memory_controller.lock().set(registers.sp.get_value() - 1, ((registers.pc.get_value() & 0xFF00) >> 8) as u8);
-
             registers.sp.decrement();
+            memory_controller.lock().set(registers.sp.get_value(), ((registers.pc.get_value() & 0xFF00) >> 8) as u8);
             registers.sp.decrement();
+            memory_controller.lock().set(registers.sp.get_value(), (registers.pc.get_value() & 0xFF) as u8);
         }
         else if self.counter == 0 {
             registers.pc.set_value(self.address);
@@ -96,7 +95,7 @@ mod tests {
     }
 
     #[test]
-    fn saves_address_to_stack_on_tick_2() {
+    fn saves_address_to_stack_on_tick_1() {
         let mut registers = Registers::new(0, 0, 0, 0, 0x1234, 0xE000);
         let mut alu = ALU::new(registers.f.clone());
         let memory = Arc::new(Mutex::new(MemoryController::new()));
@@ -107,6 +106,7 @@ mod tests {
 
         assert_eq!(false, result);
 
+        assert_eq!(0xDFFE, registers.sp.get_value());
         assert_eq!(0x34, memory.lock().get(registers.sp.get_value()));
         assert_eq!(0x12, memory.lock().get(registers.sp.get_value() + 1));
     }
