@@ -14,6 +14,7 @@ mod ld_hl_nn; //0x21
 mod inc_hl; //0x23
 mod ld_sp_nn; //0x31
 mod ld_hl_n; //0x36
+mod ld_a_n; //0x3E
 mod ld_a_c; //0x79
 mod xor_a; //0xAF
 mod or_b; //0xB0
@@ -40,6 +41,7 @@ use ld_hl_nn::LdHlNn;   //0x21
 use inc_hl::IncHl;      //0x23
 use ld_sp_nn::LdSpNn;   //0x31
 use ld_hl_n::LdHlN;     //0x36
+use ld_a_n::LdAN;       //0x3E
 use ld_a_c::LdAC;       //0x79
 use xor_a::XorA;        //0xAF
 use or_b::OrB;          //0xB0
