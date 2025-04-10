@@ -13,6 +13,7 @@ pub struct CallNn {
 
 impl Instruction for CallNn {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0xCD {
             return Some(Box::new(CallNn { counter: 2, address: 0 }))

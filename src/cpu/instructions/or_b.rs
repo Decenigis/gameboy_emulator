@@ -9,6 +9,7 @@ pub struct OrB {}
 
 impl Instruction for OrB {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0xB0 {
             return Some(Box::new(OrB {}))

@@ -12,6 +12,7 @@ pub struct LdAN {
 
 impl Instruction for LdAN {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0x3E {
             return Some(Box::new(LdAN { counter: 1 }))

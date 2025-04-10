@@ -13,6 +13,7 @@ pub struct JrNz {
 
 impl Instruction for JrNz {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0x20 {
             return Some(Box::new(JrNz { counter: 2, address: 0 }))

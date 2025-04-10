@@ -13,6 +13,7 @@ pub struct LdSpNn {
 
 impl Instruction for LdSpNn {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0x31 {
             return Some(Box::new(LdSpNn { counter: 2, value: 0 }))
@@ -109,7 +110,7 @@ mod tests {
         let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
         let mut alu = ALU::new(registers.f.clone());
         let memory = Arc::new(Mutex::new(MemoryController::new()));
-        
+
         let mut instruction = LdSpNn { counter: 0, value: 0x1234 };
 
         let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);

@@ -13,6 +13,7 @@ pub struct Ret {
 
 impl Instruction for Ret {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0xC9 {
             return Some(Box::new(Ret { counter: 1, address_low_byte: 0 }))

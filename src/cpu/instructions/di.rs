@@ -9,6 +9,7 @@ pub struct Di {}
 
 impl Instruction for Di {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0xF3 {
             return Some(Box::new(Di {}))

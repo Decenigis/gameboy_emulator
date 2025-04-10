@@ -14,6 +14,7 @@ pub struct DecBc {
 
 impl Instruction for DecBc {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0x0B {
             return Some(Box::new(DecBc { counter: 1 }))

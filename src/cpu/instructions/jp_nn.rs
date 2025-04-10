@@ -13,6 +13,7 @@ pub struct JpNn {
 
 impl Instruction for JpNn {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0xC3 {
             return Some(Box::new(JpNn { counter: 2, address: 0 }))

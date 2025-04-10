@@ -13,6 +13,7 @@ pub struct LdHlNn {
 
 impl Instruction for LdHlNn {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0x21 {
             return Some(Box::new(LdHlNn { counter: 2, value: 0 }))

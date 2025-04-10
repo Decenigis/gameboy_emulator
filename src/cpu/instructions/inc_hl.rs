@@ -14,6 +14,7 @@ pub struct IncHl {
 
 impl Instruction for IncHl {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0x23 {
             return Some(Box::new(IncHl { counter: 1 }))

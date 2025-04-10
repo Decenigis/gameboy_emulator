@@ -15,7 +15,7 @@ macro_rules! return_if_is_instruction {
 
 
 pub trait Instruction {
-
+    
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> where Self: Sized;
     fn get_opcode(&self) -> u8;
 

@@ -13,6 +13,7 @@ pub struct BadInstruction {
 
 impl Instruction for BadInstruction {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         Some(Box::new(Self {opcode: *opcode}))
     }

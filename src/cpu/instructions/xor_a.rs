@@ -9,6 +9,7 @@ pub struct XorA {}
 
 impl Instruction for XorA {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0xAF {
             return Some(Box::new(XorA {}))

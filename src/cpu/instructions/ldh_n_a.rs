@@ -14,7 +14,8 @@ pub struct LdhNA {
 }
 
 impl Instruction for LdhNA {
-
+    
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0xE0 {
             return Some(Box::new(LdhNA { counter: 2, address: 0 }))

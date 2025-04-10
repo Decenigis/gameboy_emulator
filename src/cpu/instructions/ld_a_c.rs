@@ -12,6 +12,7 @@ pub struct LdAC {}
 
 impl Instruction for LdAC {
 
+    #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
         if *opcode == 0x79 {
             return Some(Box::new(LdAC {}))
