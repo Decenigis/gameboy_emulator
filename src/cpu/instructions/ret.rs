@@ -25,7 +25,7 @@ impl Instruction for Ret {
         0xC9
     }
 
-    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
         if self.counter == 1 {
             self.address_low_byte = memory_controller.lock().get(registers.sp.get_value());
             registers.sp.increment();

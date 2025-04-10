@@ -17,6 +17,8 @@ macro_rules! return_if_is_instruction {
 pub trait Instruction {
     
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> where Self: Sized;
+
+    #[allow(dead_code)]
     fn get_opcode(&self) -> u8;
 
     fn act(&mut self, registers: &mut Registers, alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, enable_interrupts: &mut bool) -> bool; //returns whether the CPU should return the next instruction

@@ -96,6 +96,7 @@ impl VDUCounter {
             clock_events.push(ClockEvent::DrawLine);
             *counter = 224;
         } else if ly == 0x90 {
+            clock_events.push(ClockEvent::VBlankInterrupt);
             clock_events.push(ClockEvent::SendFrame);
             *counter = 274;
         } else if ly <= 0x98 {
