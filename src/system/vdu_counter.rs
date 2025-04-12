@@ -230,6 +230,18 @@ mod tests {
     }
 
     #[test]
+    fn lcdcon_tick_sends_vblank_interrupt_on_ly_90() {
+        let video_io = Arc::new(Mutex::new(VideoIO::new()));
+        video_io.lock().set(0xFF40, 0x80);
+        video_io.lock().set_ly(0x8F); //generic mid frame
+
+        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0 };
+
+        let events = vdu_counter.tick();
+
+        assert!(matches!(events[1], ClockEvent::VBlankInterrupt));
+    }
+    #[test]
     fn lcdcon_tick_sends_send_frame_on_ly_90() {
         let video_io = Arc::new(Mutex::new(VideoIO::new()));
         video_io.lock().set(0xFF40, 0x80);
@@ -239,7 +251,7 @@ mod tests {
 
         let events = vdu_counter.tick();
 
-        assert!(matches!(events[1], ClockEvent::SendFrame));
+        assert!(matches!(events[2], ClockEvent::SendFrame));
     }
 
     #[test]
