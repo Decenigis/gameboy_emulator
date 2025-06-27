@@ -38,7 +38,6 @@ impl Instruction for LdNNA {
         }
         else if self.counter == 1 {
             memory_controller.lock().set(self.address, registers.a.borrow().get_value());
-            registers.pc.increment();
         }
         else if self.counter == 0 {
             return true;
@@ -99,7 +98,7 @@ mod tests {
     fn load_data_into_a_on_tick_1() {
         let expected_a_value = 0x12;
 
-        let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
+        let mut registers = Registers::new(0, 0, 0, 0, 0xC002, 0);
         registers.a.borrow_mut().set_value(expected_a_value);
 
         let mut alu = ALU::new(registers.f.clone());
@@ -113,11 +112,12 @@ mod tests {
 
         assert_eq!(false, result);
         assert_eq!(expected_a_value, memory.lock().get(0xFF40));
+        assert_eq!(0xC002, registers.pc.get_value());
     }
 
     #[test]
     fn get_next_instruction_on_tick_0() {
-        let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
+        let mut registers = Registers::new(0, 0, 0, 0, 0xC002, 0);
         let mut alu = ALU::new(registers.f.clone());
         let memory = Arc::new(Mutex::new(MemoryController::new()));
 
@@ -128,5 +128,6 @@ mod tests {
         let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
 
         assert_eq!(true, result);
+        assert_eq!(0xC002, registers.pc.get_value());
     }
 }
