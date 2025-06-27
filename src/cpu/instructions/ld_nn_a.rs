@@ -17,14 +17,14 @@ impl Instruction for LdNNA {
 
     #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
-        if *opcode == 0xE0 {
+        if *opcode == 0xEA {
             return Some(Box::new(LdNNA { counter: 3, address: 0 }))
         }
         None
     }
 
     fn get_opcode(&self) -> u8 {
-        0xE0
+        0xEA
     }
 
     fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
@@ -33,11 +33,11 @@ impl Instruction for LdNNA {
             registers.pc.increment();
         }
         else if self.counter == 2 {
-            self.address = self.address | (memory_controller.lock().get(registers.pc.get_value()) as u16 >> 8);
+            self.address = self.address | ((memory_controller.lock().get(registers.pc.get_value()) as u16) << 8);
             registers.pc.increment();
         }
         else if self.counter == 1 {
-            memory_controller.lock().set(self.address, registers.a.get_value());
+            memory_controller.lock().set(self.address, registers.a.borrow().get_value());
             registers.pc.increment();
         }
         else if self.counter == 0 {
@@ -57,43 +57,42 @@ mod tests {
     use crate::memory::MemoryTrait;
     use super::*;
 
-    #[test]
-    fn from_opcode_returns_given_0xe0() {
-        let instruction = LdNNA::from_opcode(&0xE0);
-
-        assert_eq!(true, instruction.is_some());
-    }
+    reusable_testing_macro!(0xEA, LdNNA);
 
     #[test]
-    fn from_opcode_returns_none_given_non_0xe0() {
-        let instruction = LdNNA::from_opcode(&0x00);
-
-        assert_eq!(true, instruction.is_none());
-    }
-
-    #[test]
-    fn get_opcode_returns_0xe0() {
-        let instruction = LdNNA { counter: 0, address: 0 };
-
-        assert_eq!(0xE0, instruction.get_opcode());
-    }
-
-
-    #[test]
-    fn load_address_on_tick_2() {
+    fn load_address_on_tick_3() {
         let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
         let mut alu = ALU::new(registers.f.clone());
         let memory = Arc::new(Mutex::new(MemoryController::new()));
 
         memory.lock().set(0xC000, 0x12);
 
-        let mut instruction = LdNNA { counter: 2, address: 0 };
+        let mut instruction = LdNNA { counter: 3, address: 0 };
+
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+
+        assert_eq!(false, result);
+
+        assert_eq!(0x12, instruction.address);
+        assert_eq!(0xC001, registers.pc.get_value());
+    }
+
+    #[test]
+    fn load_address_on_tick_2() {
+        let mut registers = Registers::new(0, 0, 0, 0, 0xC001, 0);
+        let mut alu = ALU::new(registers.f.clone());
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+
+        memory.lock().set(0xC001, 0xFF);
+
+        let mut instruction = LdNNA { counter: 2, address: 0x12 };
 
         let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
 
         assert_eq!(false, result);
 
         assert_eq!(0xFF12, instruction.address);
+        assert_eq!(0xC002, registers.pc.get_value());
     }
 
     #[test]
@@ -113,7 +112,6 @@ mod tests {
         let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
 
         assert_eq!(false, result);
-
         assert_eq!(expected_a_value, memory.lock().get(0xFF40));
     }
 

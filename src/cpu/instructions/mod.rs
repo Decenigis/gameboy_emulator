@@ -24,7 +24,9 @@ mod jp_nn; //0xC3
 mod ret; //0xC9
 mod call_nn; //0xCD
 mod ldh_n_a; //0xE0
+mod ld_nn_a; //0xEA
 mod di;
+
 
 pub use instruction::Instruction;
 pub use instruction::decode_instruction;
@@ -46,4 +48,5 @@ use jp_nn::JpNn;        //0xC3
 use ret::Ret;           //0xC9
 use call_nn::CallNn;    //0xCD
 use ldh_n_a::LdhNA;     //0xE0
+use ld_nn_a::LdNNA;     //0xEA
 use di::Di;             //0xF3

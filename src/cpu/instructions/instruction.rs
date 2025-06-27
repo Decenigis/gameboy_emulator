@@ -14,21 +14,21 @@ such as ld_r_n
 #[macro_export] macro_rules! reusable_testing_macro {
     ($opcode:literal, $instruction:ty) => {
         #[test]
-        fn from_opcode_returns_given_0x3e() {
+        fn from_opcode_returns_given_right_opcode() {
             let instruction = <$instruction>::from_opcode(&$opcode);
 
             assert_eq!(true, instruction.is_some());
         }
 
         #[test]
-        fn from_opcode_returns_none_given_non_0x3e() {
+        fn from_opcode_returns_none_given_wrong_opcode() {
             let instruction = <$instruction>::from_opcode(&0x00);
 
             assert_eq!(true, instruction.is_none());
         }
 
         #[test]
-        fn get_opcode_returns_0x3e() {
+        fn get_opcode_returns_opcode() {
             let instruction = <$instruction>::from_opcode(&$opcode).unwrap();
 
             assert_eq!($opcode, instruction.get_opcode());
@@ -77,6 +77,7 @@ pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     return_if_is_instruction!(Ret, opcode);     //0xC9
     return_if_is_instruction!(CallNn, opcode);  //0xCD
     return_if_is_instruction!(LdhNA, opcode);   //0xE0
+    return_if_is_instruction!(LdNNA, opcode);   //0xEA
     return_if_is_instruction!(Di, opcode);      //0xF3
 
     //if fallen through, return a generic bad instruction
