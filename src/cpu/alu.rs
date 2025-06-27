@@ -94,6 +94,23 @@ impl ALU {
         self.add_internal(a, b);
     }
 
+    pub fn add_no_carry<T: Register>(&self, a: &mut T, b: &T)
+    where
+        <T as Register>::ValueType: From<<<T as Register>::ValueType as Shl<i32>>::Output>,
+        <T as Register>::ValueType: From<<<T as Register>::ValueType as Add>::Output>
+    {
+        let carry_flag = {
+            let mut flags = self.flags.borrow_mut();
+            flags.set_bit(Self::HALF_CARRY_FLAG, false);
+
+            flags.get_bit(Self::CARRY_FLAG)
+        };
+
+        self.add_internal(a, b);
+
+        self.flags.borrow_mut().set_bit(Self::CARRY_FLAG, carry_flag);
+    }
+
     pub fn adc<T: Register>(&self, a: &mut T, b: &T)
     where
         <T as Register>::ValueType: From<<<T as Register>::ValueType as Shl<i32>>::Output>,
@@ -380,6 +397,107 @@ mod tests {
         let alu = ALU::new(flags.clone());
 
         alu.add(&mut a, &b);
+
+        assert_eq!(flags.borrow().get_bit(ALU::CARRY_FLAG), true);
+    }
+
+
+
+    #[test]
+    fn add_no_carry_resets_sub_bit() {
+        let mut a = Register8::new(0x01);
+        let b = Register8::new(0x02);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        flags.borrow_mut().set_bit(ALU::SUB_FLAG, true);
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(flags.borrow().get_bit(ALU::SUB_FLAG), false);
+    }
+
+    #[test]
+    fn add_no_carry_sets_zero_bit_when_zero() {
+        let mut a = Register8::new(0xFF);
+        let b = Register8::new(0x01);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(true, flags.borrow().get_bit(ALU::ZERO_FLAG));
+    }
+
+    #[test]
+    fn add_no_carry_resets_zero_bit_when_not_zero() {
+        let mut a = Register8::new(0xEF);
+        let b = Register8::new(0x01);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
+    }
+
+    #[test]
+    fn add_no_carry_sets_half_carry_flag_correctly_for_u8() {
+        let mut a = Register8::new(0x0F);
+        let b = Register8::new(0x0F);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(true, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+    }
+
+    #[test]
+    fn add_no_carry_does_not_set_half_carry_flag_correctly_for_u8() {
+        let mut a = Register8::new(0x02);
+        let b = Register8::new(0x02);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+    }
+
+    #[test]
+    fn add_no_carry_sets_half_carry_flag_correctly_for_u16() {
+        let mut a = Register16::new(0x0F00);
+        let b = Register16::new(0x0F00);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(true, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+    }
+
+    #[test]
+    fn add_no_carry_does_not_set_half_carry_flag_correctly_for_u16() {
+        let mut a = Register16::new(0xF0);
+        let b = Register16::new(0xF0);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+    }
+
+    #[test]
+    fn add_no_carry_does_not_change_carry_flag() {
+        let mut a = Register8::new(0x01);
+        let b = Register8::new(0x01);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        flags.borrow_mut().set_bit(ALU::CARRY_FLAG, true);
+        let alu = ALU::new(flags.clone());
+
+        alu.add_no_carry(&mut a, &b);
 
         assert_eq!(flags.borrow().get_bit(ALU::CARRY_FLAG), true);
     }
