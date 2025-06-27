@@ -3,7 +3,7 @@ use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::*;
 use crate::cpu::registers::Registers;
-use crate::ld_r_n_decode_instruction;
+use crate::{ld_r_n_decode_instruction, ld_r_r_decode_instruction};
 use crate::memory::MemoryController;
 
 
@@ -62,6 +62,7 @@ pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     return_if_is_instruction!(Nop, opcode);     //0x00
 
     ld_r_n_decode_instruction!(opcode);
+    ld_r_r_decode_instruction!(opcode);
 
     return_if_is_instruction!(LdBcNn, opcode);  //0x01
     return_if_is_instruction!(DecBc, opcode);   //0x0B
@@ -70,7 +71,6 @@ pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     return_if_is_instruction!(IncHl, opcode);   //0x23
     return_if_is_instruction!(LdSpNn, opcode);  //0x31
     return_if_is_instruction!(LdHlN, opcode);   //0x36
-    return_if_is_instruction!(LdAC, opcode);    //0x79
     return_if_is_instruction!(XorA, opcode);    //0xAF
     return_if_is_instruction!(OrB, opcode);     //0xB0
     return_if_is_instruction!(JpNn, opcode);    //0xC3

@@ -62,7 +62,7 @@ macro_rules! ld_r_n {
                     let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false);
 
                     assert_eq!(false, result);
-                    assert_eq!(0x12, registers.$register.borrow_mut().get_value());
+                    assert_eq!(0x12, registers.$register.borrow().get_value());
                     assert_eq!(0xC001, registers.pc.get_value());
                 }
 
