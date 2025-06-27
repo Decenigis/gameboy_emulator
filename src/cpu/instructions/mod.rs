@@ -11,6 +11,7 @@ mod nop; //0x00
 
 mod ld_r_n;
 mod ld_r_r;
+mod ret_with_condition;
 mod ld_bc_nn; //0x01
 mod dec_bc; //0x0B
 mod jr_nz; //0x20
@@ -35,6 +36,7 @@ use bad_instruction::BadInstruction;
 pub use nop::Nop;       //0x00
 use ld_r_n::*;
 use ld_r_r::*;
+use ret_with_condition::*;
 use ld_bc_nn::LdBcNn;   //0x01
 use dec_bc::DecBc;      //0x0B
 use jr_nz::JrNz;        //0x21
