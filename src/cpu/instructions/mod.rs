@@ -13,6 +13,7 @@ mod ld_r_n;
 mod ld_r_r;
 mod ret_with_condition;
 mod inc_r;
+mod push_rr;
 
 mod ld_bc_nn; //0x01
 mod dec_bc; //0x0B
@@ -31,6 +32,7 @@ mod ldh_c_a; //0xE2
 mod ld_nn_a; //0xEA
 mod di;
 
+
 pub use instruction::Instruction;
 pub use instruction::decode_instruction;
 use bad_instruction::BadInstruction;
@@ -40,6 +42,7 @@ use ld_r_n::*;
 use ld_r_r::*;
 use ret_with_condition::*;
 use inc_r::*;
+use push_rr::*;
 use ld_bc_nn::LdBcNn;   //0x01
 use dec_bc::DecBc;      //0x0B
 use jr_nz::JrNz;        //0x21
