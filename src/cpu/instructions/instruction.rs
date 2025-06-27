@@ -5,6 +5,37 @@ use crate::cpu::instructions::*;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
 
+
+/**
+This macro should be used where instructions use a reusable handler,
+such as ld_r_n
+*/
+#[macro_export] macro_rules! reusable_testing_macro {
+    ($opcode:literal, $instruction:ty) => {
+        #[test]
+        fn from_opcode_returns_given_0x3e() {
+            let instruction = <$instruction>::from_opcode(&$opcode);
+
+            assert_eq!(true, instruction.is_some());
+        }
+
+        #[test]
+        fn from_opcode_returns_none_given_non_0x3e() {
+            let instruction = <$instruction>::from_opcode(&0x00);
+
+            assert_eq!(true, instruction.is_none());
+        }
+
+        #[test]
+        fn get_opcode_returns_0x3e() {
+            let instruction = <$instruction>::from_opcode(&$opcode).unwrap();
+
+            assert_eq!($opcode, instruction.get_opcode());
+        }
+    };
+}
+
+
 macro_rules! return_if_is_instruction {
     ($instruction:ty, $opcode:expr) => {
         if let Some(instruction) = <$instruction>::from_opcode($opcode) {
@@ -15,7 +46,7 @@ macro_rules! return_if_is_instruction {
 
 
 pub trait Instruction {
-    
+
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> where Self: Sized;
 
     #[allow(dead_code)]

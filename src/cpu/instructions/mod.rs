@@ -3,6 +3,8 @@ mod nullable_instruction;
 #[cfg(test)]
 pub use nullable_instruction::*;
 
+mod reusable;
+
 mod instruction;
 mod bad_instruction;
 
