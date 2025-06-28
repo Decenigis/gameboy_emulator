@@ -14,6 +14,7 @@ mod ld_r_r;
 mod ret_with_condition;
 mod inc_r;
 mod push_rr;
+mod pop_rr;
 mod add_a_r;
 
 mod ld_bc_nn; //0x01
@@ -44,6 +45,7 @@ use ld_r_r::*;
 use ret_with_condition::*;
 use inc_r::*;
 use push_rr::*;
+use pop_rr::*;
 use add_a_r::*;
 use ld_bc_nn::LdBcNn;   //0x01
 use dec_bc::DecBc;      //0x0B
