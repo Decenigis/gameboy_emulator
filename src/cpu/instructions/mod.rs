@@ -14,6 +14,7 @@ mod ld_r_r;
 mod ret_with_condition;
 mod inc_r;
 mod push_rr;
+mod add_a_r;
 
 mod ld_bc_nn; //0x01
 mod dec_bc; //0x0B
@@ -22,6 +23,7 @@ mod ld_hl_nn; //0x21
 mod inc_hl; //0x23
 mod ld_sp_nn; //0x31
 mod ld_hl_n; //0x36
+mod add_a_a; //0x87
 mod xor_a; //0xAF
 mod or_b; //0xB0
 mod jp_nn; //0xC3
@@ -31,7 +33,6 @@ mod ldh_n_a; //0xE0
 mod ldh_c_a; //0xE2
 mod ld_nn_a; //0xEA
 mod di;
-
 
 pub use instruction::Instruction;
 pub use instruction::decode_instruction;
@@ -43,6 +44,7 @@ use ld_r_r::*;
 use ret_with_condition::*;
 use inc_r::*;
 use push_rr::*;
+use add_a_r::*;
 use ld_bc_nn::LdBcNn;   //0x01
 use dec_bc::DecBc;      //0x0B
 use jr_nz::JrNz;        //0x21
@@ -50,6 +52,7 @@ use ld_hl_nn::LdHlNn;   //0x21
 use inc_hl::IncHl;      //0x23
 use ld_sp_nn::LdSpNn;   //0x31
 use ld_hl_n::LdHlN;     //0x36
+use add_a_a::AddAA;     //0x87
 use xor_a::XorA;        //0xAF
 use or_b::OrB;          //0xB0
 use jp_nn::JpNn;        //0xC3
