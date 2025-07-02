@@ -16,8 +16,8 @@ mod inc_r;
 mod push_rr;
 mod pop_rr;
 mod add_a_r;
+mod ld_rr_nn;
 
-mod ld_bc_nn; //0x01
 mod dec_bc; //0x0B
 mod jr_nz; //0x20
 mod ld_hl_nn; //0x21
@@ -30,6 +30,7 @@ mod or_b; //0xB0
 mod jp_nn; //0xC3
 mod ret; //0xC9
 mod call_nn; //0xCD
+mod sub_a_n; //0xD6
 mod ldh_n_a; //0xE0
 mod ldh_c_a; //0xE2
 mod ld_nn_a; //0xEA
@@ -47,9 +48,10 @@ use inc_r::*;
 use push_rr::*;
 use pop_rr::*;
 use add_a_r::*;
-use ld_bc_nn::LdBcNn;   //0x01
+use ld_rr_nn::*;
+
 use dec_bc::DecBc;      //0x0B
-use jr_nz::JrNz;        //0x21
+use jr_nz::JrNz;        //0x20
 use ld_hl_nn::LdHlNn;   //0x21
 use inc_hl::IncHl;      //0x23
 use ld_sp_nn::LdSpNn;   //0x31
@@ -60,6 +62,7 @@ use or_b::OrB;          //0xB0
 use jp_nn::JpNn;        //0xC3
 use ret::Ret;           //0xC9
 use call_nn::CallNn;    //0xCD
+use sub_a_n::SubAN;     //0xD6
 use ldh_n_a::LdhNA;     //0xE0
 use ldh_c_a::LdhCA;     //0xE2
 use ld_nn_a::LdNNA;     //0xEA

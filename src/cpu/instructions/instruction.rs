@@ -3,7 +3,7 @@ use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::*;
 use crate::cpu::registers::Registers;
-use crate::{add_a_r_decode_instruction, inc_r_decode_instruction, ld_r_n_decode_instruction, ld_r_r_decode_instruction, pop_rr_decode_instruction, push_rr_decode_instruction, ret_with_condition_decode_instruction};
+use crate::{add_a_r_decode_instruction, inc_r_decode_instruction, ld_r_n_decode_instruction, ld_r_r_decode_instruction, ld_rr_nn_decode_instruction, pop_rr_decode_instruction, push_rr_decode_instruction, ret_with_condition_decode_instruction};
 use crate::memory::MemoryController;
 
 
@@ -68,6 +68,7 @@ pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     push_rr_decode_instruction!(opcode);
     pop_rr_decode_instruction!(opcode);
     add_a_r_decode_instruction!(opcode);
+    ld_rr_nn_decode_instruction!(opcode);
 
     return_if_is_instruction!(LdBcNn, opcode);  //0x01
     return_if_is_instruction!(DecBc, opcode);   //0x0B
@@ -82,6 +83,7 @@ pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     return_if_is_instruction!(JpNn, opcode);    //0xC3
     return_if_is_instruction!(Ret, opcode);     //0xC9
     return_if_is_instruction!(CallNn, opcode);  //0xCD
+    return_if_is_instruction!(SubAN, opcode);   //0xD6
     return_if_is_instruction!(LdhNA, opcode);   //0xE0
     return_if_is_instruction!(LdhCA, opcode);   //0xE2
     return_if_is_instruction!(LdNNA, opcode);   //0xEA
