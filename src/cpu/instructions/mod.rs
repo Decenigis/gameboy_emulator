@@ -30,6 +30,7 @@ mod or_b; //0xB0
 mod jp_nn; //0xC3
 mod ret; //0xC9
 mod call_nn; //0xCD
+mod add_a_n; //0xC6
 mod sub_a_n; //0xD6
 mod ldh_n_a; //0xE0
 mod ldh_c_a; //0xE2
@@ -62,6 +63,7 @@ use or_b::OrB;          //0xB0
 use jp_nn::JpNn;        //0xC3
 use ret::Ret;           //0xC9
 use call_nn::CallNn;    //0xCD
+use add_a_n::AddAN;     //0xD6
 use sub_a_n::SubAN;     //0xD6
 use ldh_n_a::LdhNA;     //0xE0
 use ldh_c_a::LdhCA;     //0xE2
