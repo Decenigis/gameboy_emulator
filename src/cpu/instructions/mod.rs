@@ -13,6 +13,7 @@ mod ld_r_n;
 mod ld_r_r;
 mod ret_with_condition;
 mod inc_r;
+mod dec_r;
 mod push_rr;
 mod pop_rr;
 mod add_a_r;
@@ -22,6 +23,7 @@ mod dec_bc; //0x0B
 mod jr_nz; //0x20
 mod ld_hl_nn; //0x21
 mod inc_hl; //0x23
+mod ldi_a_hl; //0x2A
 mod ld_sp_nn; //0x31
 mod ld_hl_n; //0x36
 mod add_a_a; //0x87
@@ -46,6 +48,7 @@ use ld_r_n::*;
 use ld_r_r::*;
 use ret_with_condition::*;
 use inc_r::*;
+use dec_r::*;
 use push_rr::*;
 use pop_rr::*;
 use add_a_r::*;
@@ -55,6 +58,7 @@ use dec_bc::DecBc;      //0x0B
 use jr_nz::JrNz;        //0x20
 use ld_hl_nn::LdHlNn;   //0x21
 use inc_hl::IncHl;      //0x23
+use ldi_a_hl::LdiAHl;   //0x2A
 use ld_sp_nn::LdSpNn;   //0x31
 use ld_hl_n::LdHlN;     //0x36
 use add_a_a::AddAA;     //0x87
