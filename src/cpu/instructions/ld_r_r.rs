@@ -1,11 +1,11 @@
-use paste::paste;
-use crate::memory::{MemoryController, MemoryTrait};
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
+use crate::memory::{MemoryController, MemoryTrait};
+use parking_lot::Mutex;
+use paste::paste;
+use std::sync::Arc;
 
 
 macro_rules! ld_r_r {
@@ -26,7 +26,7 @@ macro_rules! ld_r_r {
                     $opcode
                 }
 
-                fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+                fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
                     let value = registers.$reg_2.borrow().get_value();
                     registers.$reg_1.borrow_mut().set_value(value);
                     true
@@ -51,7 +51,7 @@ macro_rules! ld_r_r {
 
                     let mut instruction = [<Ld $reg_1_upper $reg_2_upper>] {};
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(true, result);
                     assert_eq!(registers.$reg_1.borrow().get_value(), registers.$reg_1.borrow().get_value());

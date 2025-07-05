@@ -1,9 +1,9 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 pub struct OrB {}
 
@@ -21,7 +21,7 @@ impl Instruction for OrB {
         0xB0
     }
 
-    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         alu.or_internal(registers.a.clone(), registers.c.clone());
 
         true
@@ -32,8 +32,8 @@ impl Instruction for OrB {
 
 #[cfg(test)]
 mod tests {
-    use crate::cpu::register::Register;
     use super::*;
+    use crate::cpu::register::Register;
 
     #[test]
     fn from_opcode_returns_given_0xb0() {
@@ -63,7 +63,7 @@ mod tests {
 
         let mut instruction = OrB {};
 
-        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())) ,&mut false);
+        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())) ,&mut false, &mut false);
 
         assert_eq!(true, result);
     }
@@ -77,7 +77,7 @@ mod tests {
 
         let mut instruction = OrB {};
 
-        instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false);
+        instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false, &mut false);
 
         assert_eq!(0xFF, registers.a.borrow().get_value());
     }

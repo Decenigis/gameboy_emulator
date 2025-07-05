@@ -1,10 +1,10 @@
-use paste::paste;
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
+use parking_lot::Mutex;
+use paste::paste;
+use std::sync::Arc;
 
 
 macro_rules! add_hl_rr {
@@ -30,7 +30,7 @@ macro_rules! add_hl_rr {
                     $opcode
                 }
 
-                fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+                fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
                     if self.counter == 1 {
                         alu.add(&mut registers.hl, &registers.$register);
                     }
@@ -62,7 +62,7 @@ macro_rules! add_hl_rr {
 
                     let mut instruction = [<AddHl $register_upper>] { counter: 1};
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(false, result);
                     assert_eq!(0x2468, registers.hl.get_value());
@@ -76,7 +76,7 @@ macro_rules! add_hl_rr {
 
                     let mut instruction = [<AddHl $register_upper>] { counter: 0 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(true, result);
                 }

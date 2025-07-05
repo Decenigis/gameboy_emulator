@@ -1,10 +1,10 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::instruction::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 pub struct BadInstruction {
 
@@ -22,7 +22,7 @@ impl Instruction for BadInstruction {
         self.opcode
     }
 
-    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         println!("Bad instruction '{:#X}' at address '{:#X}'", self.opcode, registers.pc.get_value().wrapping_sub(1));
         false
     }
@@ -58,7 +58,7 @@ mod tests {
 
         let mut instruction = BadInstruction { opcode: 0x00 };
 
-        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false);
+        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false, &mut false);
 
         assert_eq!(false, result);
     }

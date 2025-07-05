@@ -1,9 +1,9 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 pub struct Di {}
 
@@ -21,7 +21,7 @@ impl Instruction for Di {
         0xF3
     }
 
-    fn act(&mut self, _registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, _registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         *enable_interrupts = false;
 
         true
@@ -62,7 +62,7 @@ mod tests {
 
         let mut instruction = Di {};
 
-        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())) ,&mut false);
+        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())) ,&mut false, &mut false);
 
         assert_eq!(true, result);
     }
@@ -75,7 +75,7 @@ mod tests {
         let mut instruction = Di {};
         let mut enable_interrupts = true;
 
-        instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut enable_interrupts);
+        instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut enable_interrupts, &mut false);
 
         assert_eq!(false, enable_interrupts);
     }

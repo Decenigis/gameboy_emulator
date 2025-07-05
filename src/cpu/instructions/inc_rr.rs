@@ -1,12 +1,12 @@
-use crate::cpu::register16::Register16;
-use crate::cpu::instructions::Instruction;
-use crate::memory::MemoryController;
-use crate::cpu::registers::Registers;
-use crate::cpu::register::Register;
 use crate::cpu::alu::ALU;
-use std::sync::Arc;
+use crate::cpu::instructions::Instruction;
+use crate::cpu::register::Register;
+use crate::cpu::register16::Register16;
+use crate::cpu::registers::Registers;
+use crate::memory::MemoryController;
 use parking_lot::Mutex;
 use paste::paste;
+use std::sync::Arc;
 
 macro_rules! inc_r {
     ($opcode:literal, $register:ident, $register_upper:ident) => {
@@ -28,7 +28,7 @@ macro_rules! inc_r {
                     $opcode
                 }
 
-                fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+                fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
                     if self.counter == 1 {
                         alu.add_no_carry(&mut registers.$register, &Register16::one());
                     }
@@ -57,7 +57,7 @@ macro_rules! inc_r {
 
                     let mut instruction = [<Inc $register_upper>] { counter: 1};
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(false, result);
                     assert_eq!(0x1235, registers.$register.get_value());
@@ -74,7 +74,7 @@ macro_rules! inc_r {
 
                     let mut instruction = [<Inc $register_upper>] { counter: 0 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(true, result);
                     assert_eq!(0x1235, registers.$register.get_value());

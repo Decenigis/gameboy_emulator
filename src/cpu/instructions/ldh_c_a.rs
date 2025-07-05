@@ -1,10 +1,10 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 //Timings for this one might be a bit off due to te 4-cycle alignment
 
@@ -26,7 +26,7 @@ impl Instruction for LdhCA {
         0xE2
     }
 
-    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         if self.counter == 1 {
             memory_controller.lock().set(0xFF00 | (registers.c.borrow().get_value() as u16), registers.a.borrow().get_value());
         }
@@ -43,9 +43,9 @@ impl Instruction for LdhCA {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::cpu::register::Register;
     use crate::memory::MemoryTrait;
-    use super::*;
 
     reusable_testing_macro!(0xE2, LdhCA);
 
@@ -64,7 +64,7 @@ mod tests {
 
         let mut instruction = LdhCA { counter: 1 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(false, result);
         assert_eq!(expected_a_value, memory.lock().get(0xFF40));
@@ -80,7 +80,7 @@ mod tests {
 
         let mut instruction = LdhCA { counter: 0 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(true, result);
     }

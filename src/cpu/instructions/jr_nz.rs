@@ -1,10 +1,10 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 pub struct JrNz {
     counter: u8,
@@ -25,7 +25,7 @@ impl Instruction for JrNz {
         0x20
     }
 
-    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         if self.counter == 1 {
             let relative_address = memory_controller.lock().get(registers.pc.get_value());
             registers.pc.increment();
@@ -87,7 +87,7 @@ mod tests {
 
         let mut instruction = JrNz { counter: 1, address: 0 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(false, result);
 
@@ -104,7 +104,7 @@ mod tests {
 
         let mut instruction = JrNz { counter: 1, address: 0 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(false, result);
 
@@ -121,7 +121,7 @@ mod tests {
 
         let mut instruction = JrNz { counter: 0, address: 0x1234 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(true, result);
 
@@ -139,7 +139,7 @@ mod tests {
 
         let mut instruction = JrNz { counter: 0, address: 0x1234 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(true, result);
 

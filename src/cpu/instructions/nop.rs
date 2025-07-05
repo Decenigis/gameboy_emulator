@@ -1,9 +1,9 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::instruction::Instruction;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 pub struct Nop {}
 
@@ -21,7 +21,7 @@ impl Instruction for Nop {
         0x00
     }
 
-    fn act(&mut self, _registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, _registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         true
     }
 }
@@ -60,7 +60,7 @@ mod tests {
 
         let mut instruction = Nop {};
 
-        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())) ,&mut false);
+        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())) ,&mut false, &mut false);
 
         assert_eq!(true, result);
     }

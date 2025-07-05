@@ -12,6 +12,7 @@ pub struct GameBoyCPU {
     registers: Registers,
     alu: ALU,
     enable_interrupts: bool,
+    is_halted: bool,
     current_instruction: Box<dyn Instruction>,
     interrupt: Option<Interrupt>,
 }
@@ -20,7 +21,11 @@ pub struct GameBoyCPU {
 impl CPU for GameBoyCPU {
 
     fn clock (&mut self, memory: Arc<Mutex<MemoryController>>) {
-        let instruction_finished = self.current_instruction.act(&mut self.registers, &mut self.alu, memory.clone(), &mut self.enable_interrupts);
+        if self.is_halted {
+            return;
+        }
+
+        let instruction_finished = self.current_instruction.act(&mut self.registers, &mut self.alu, memory.clone(), &mut self.enable_interrupts, &mut self.is_halted);
 
         if instruction_finished {
             self.load_next_instruction(memory)
@@ -40,6 +45,7 @@ impl CPU for GameBoyCPU {
         }
 
         self.interrupt = Some(interrupt);
+        self.is_halted = false;
 
         memory.lock().set(0xFF0F, if_ | interrupt.get_bit_mask());
     }
@@ -66,6 +72,7 @@ impl GameBoyCPU {
             registers,
             alu: ALU::new(f),
             enable_interrupts: false,
+            is_halted: false,
             current_instruction: first_instruction,
             interrupt: None,
         }
@@ -80,7 +87,7 @@ impl GameBoyCPU {
             }
             None => {}
         }
-        
+
         let opcode = memory.lock().get(self.registers.pc.get_value());
 
         self.current_instruction = decode_instruction(&opcode);
@@ -109,6 +116,20 @@ mod tests {
         cpu.clock(memory.clone());
 
         assert_eq!(nullable_internal.borrow().was_executed, true);
+    }
+
+    #[test]
+    fn does_not_execute_when_halted() {
+        let nullable_internal = Rc::new(RefCell::new(NullableInstructionInternal::new()));
+        let nullable_instruction = Box::new(NullableInstruction::new(nullable_internal.clone(), 0xDD, true));
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+
+        let mut cpu = GameBoyCPU::new(nullable_instruction);
+        cpu.is_halted = true;
+
+        cpu.clock(memory.clone());
+
+        assert_eq!(nullable_internal.borrow().was_executed, false);
     }
 
     #[test]
@@ -163,7 +184,23 @@ mod tests {
         cpu.try_interrupt(memory.clone(), Interrupt::VBlank);
         cpu.clock(memory.clone());
 
-        assert_eq!(0x0041, cpu.registers.pc.get_value()); 
+        assert_eq!(0x0041, cpu.registers.pc.get_value());
+    }
+
+    #[test]
+    fn unhalts_when_interrupted() {
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+        memory.lock().set(0xFFFF, 0x01);
+        memory.lock().set(0xFF0F, 0x00);
+
+        let mut cpu = GameBoyCPU::new_with_nop();
+
+        cpu.enable_interrupts = true;
+
+        cpu.try_interrupt(memory.clone(), Interrupt::VBlank);
+        cpu.clock(memory.clone());
+
+        assert_eq!(false, cpu.is_halted);
     }
 
     #[test]

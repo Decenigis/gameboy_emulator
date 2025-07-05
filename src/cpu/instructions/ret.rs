@@ -1,10 +1,10 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 pub struct Ret {
     counter: u8,
@@ -25,7 +25,7 @@ impl Instruction for Ret {
         0xC9
     }
 
-    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         if self.counter == 1 {
             self.address_low_byte = memory_controller.lock().get(registers.sp.get_value());
             registers.sp.increment();
@@ -81,7 +81,7 @@ mod tests {
 
         let mut instruction = Ret { counter: 1, address_low_byte: 0 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory,&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory,&mut false, &mut false);
 
         assert_eq!(false, result);
         assert_eq!(0x12, instruction.address_low_byte);
@@ -98,7 +98,7 @@ mod tests {
 
         let mut instruction = Ret { counter: 0, address_low_byte: 0x12 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory,&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory,&mut false, &mut false);
 
         assert_eq!(true, result);
         assert_eq!(0x3412, registers.pc.get_value());

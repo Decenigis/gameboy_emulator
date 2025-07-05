@@ -1,11 +1,11 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
-use crate::cpu::register8::Register8;
 use crate::cpu::register::Register;
+use crate::cpu::register8::Register8;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 pub struct AddAA {}
 
@@ -25,7 +25,7 @@ impl Instruction for AddAA {
         0x87
     }
 
-    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         let fake_register = Register8::new(registers.a.borrow().get_value());
         alu.add(&mut *registers.a.clone().borrow_mut(), &fake_register);
 
@@ -37,7 +37,7 @@ impl Instruction for AddAA {
 #[cfg(test)]
 mod add_a_a {
     use super::*;
-    
+
     reusable_testing_macro!(0x87, AddAA);
     
     #[test]
@@ -50,7 +50,7 @@ mod add_a_a {
         
         let mut instruction = AddAA {};
         
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
         
         assert_eq!(true, result);
         assert_eq!(0x24, registers.a.borrow().get_value());

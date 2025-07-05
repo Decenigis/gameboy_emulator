@@ -1,11 +1,11 @@
-use paste::paste;
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
+use parking_lot::Mutex;
+use paste::paste;
+use std::sync::Arc;
 
 macro_rules! ld_rr_nn {
     ($opcode:literal, $register:ident, $register_upper:ident) => {
@@ -29,7 +29,7 @@ macro_rules! ld_rr_nn {
                     $opcode
                 }
 
-                fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+                fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
                     if self.counter == 2 {
                         self.value = memory_controller.lock().get(registers.pc.get_value()) as u16;
                         registers.pc.increment();
@@ -64,7 +64,7 @@ macro_rules! ld_rr_nn {
 
                     let mut instruction = [<Ld $register_upper Nn>]  { counter: 2, value: 0 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
                     assert_eq!(false, result);
 
@@ -81,7 +81,7 @@ macro_rules! ld_rr_nn {
 
                     let mut instruction = [<Ld $register_upper Nn>]  { counter: 1, value: 0 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
                     assert_eq!(false, result);
 
@@ -96,7 +96,7 @@ macro_rules! ld_rr_nn {
 
                     let mut instruction = [<Ld $register_upper Nn>]  { counter: 0, value: 0x1234 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
                     assert_eq!(true, result);
 

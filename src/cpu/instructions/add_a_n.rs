@@ -1,11 +1,11 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
-use crate::cpu::register8::Register8;
 use crate::cpu::register::Register;
+use crate::cpu::register8::Register8;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 pub struct AddAN {
     counter: u8,
@@ -31,7 +31,7 @@ impl Instruction for AddAN {
         0xC6
     }
 
-    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         if self.counter == 1 {
             self.value = memory_controller.lock().get(registers.pc.get_value());
             registers.pc.increment();
@@ -63,7 +63,7 @@ mod add_a_a {
 
         let mut instruction = AddAN { counter: 1, value:0 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
         assert_eq!(false, result);
         assert_eq!(0x12, instruction.value);
@@ -78,7 +78,7 @@ mod add_a_a {
 
         let mut instruction = AddAN { counter: 0, value: 0x12 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
         assert_eq!(true, result);
         assert_eq!(0x36, registers.a.borrow().get_value());

@@ -1,10 +1,10 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::*;
 use crate::cpu::registers::Registers;
-use crate::{add_a_r_decode_instruction, add_hl_rr_decode_instruction, call_cc_nn_decode_instruction, dec_r_decode_instruction, inc_r_decode_instruction, inc_rr_decode_instruction, ld_a_rr_decode_instruction, ld_r_n_decode_instruction, ld_r_r_decode_instruction, ld_rr_a_decode_instruction, ld_rr_nn_decode_instruction, pop_rr_decode_instruction, push_rr_decode_instruction, ret_with_condition_decode_instruction};
 use crate::memory::MemoryController;
+use crate::{add_a_r_decode_instruction, add_hl_rr_decode_instruction, call_cc_nn_decode_instruction, dec_r_decode_instruction, inc_r_decode_instruction, inc_rr_decode_instruction, ld_a_rr_decode_instruction, ld_r_n_decode_instruction, ld_r_r_decode_instruction, ld_rr_a_decode_instruction, ld_rr_nn_decode_instruction, pop_rr_decode_instruction, push_rr_decode_instruction, ret_with_condition_decode_instruction};
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 
 /**
@@ -53,7 +53,7 @@ pub trait Instruction {
     #[allow(dead_code)]
     fn get_opcode(&self) -> u8;
 
-    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, enable_interrupts: &mut bool) -> bool; //returns whether the CPU should return the next instruction
+    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, enable_interrupts: &mut bool, is_halted: &mut bool) -> bool; //returns whether the CPU should return the next instruction
 
 }
 

@@ -1,11 +1,11 @@
-use paste::paste;
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
+use parking_lot::Mutex;
+use paste::paste;
+use std::sync::Arc;
 
 
 macro_rules! pop_rr {
@@ -30,7 +30,7 @@ macro_rules! pop_rr {
                 }
 
                 //maybe wrong ordering, shouldn't have too much bearing.
-                fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+                fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
                     if self.counter == 2 {
                         registers.$register.set_value(memory_controller.lock().get(registers.sp.get_value()) as u16);
                         registers.sp.increment();
@@ -65,7 +65,7 @@ macro_rules! pop_rr {
 
                     let mut instruction = [<Pop $register_upper>] { counter: 2 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(false, result);
                     assert_eq!(0x0034, registers.$register.get_value());
@@ -82,7 +82,7 @@ macro_rules! pop_rr {
 
                     let mut instruction = [<Pop $register_upper>] { counter: 1 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(false, result);
                     assert_eq!(0x1234, registers.$register.get_value());
@@ -97,7 +97,7 @@ macro_rules! pop_rr {
 
                     let mut instruction = [<Pop $register_upper>] { counter: 0 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(true, result);
                     assert_eq!(0xE000, registers.sp.get_value());

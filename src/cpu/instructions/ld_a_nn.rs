@@ -1,10 +1,10 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 //Timings for this one might be a bit off due to te 4-cycle alignment
 
@@ -27,7 +27,7 @@ impl Instruction for LdANN {
         0xFA
     }
 
-    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         if self.counter == 3 {
             self.address = memory_controller.lock().get(registers.pc.get_value()) as u16;
             registers.pc.increment();
@@ -52,9 +52,9 @@ impl Instruction for LdANN {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::cpu::register::Register;
     use crate::memory::MemoryTrait;
-    use super::*;
 
     reusable_testing_macro!(0xFA, LdANN);
 
@@ -68,7 +68,7 @@ mod tests {
 
         let mut instruction = LdANN { counter: 3, address: 0 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(false, result);
 
@@ -86,7 +86,7 @@ mod tests {
 
         let mut instruction = LdANN { counter: 2, address: 0x12 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(false, result);
 
@@ -106,7 +106,7 @@ mod tests {
 
         let mut instruction = LdANN { counter: 1, address: 0xFF40 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(false, result);
         assert_eq!(expected_a_value, registers.a.borrow().get_value());
@@ -123,7 +123,7 @@ mod tests {
 
         let mut instruction = LdANN { counter: 0, address: 0x1234 };
 
-        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(true, result);
         assert_eq!(0xC002, registers.pc.get_value());

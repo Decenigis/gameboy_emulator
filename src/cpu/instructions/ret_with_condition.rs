@@ -1,11 +1,11 @@
-use paste::paste;
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
+use parking_lot::Mutex;
+use paste::paste;
+use std::sync::Arc;
 
 
 
@@ -30,7 +30,7 @@ macro_rules! ret_with_condition {
                     $opcode
                 }
 
-                fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+                fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
                     if registers.f.borrow().get_bit(ALU::$flag) == $wants_set {
                         if self.counter == 1 {
                             self.address_low_byte = memory_controller.lock().get(registers.sp.get_value());
@@ -74,7 +74,7 @@ macro_rules! ret_with_condition {
 
                     let mut instruction = [<Ret $suffix>] { counter: 1, address_low_byte: 0 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory,&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory, &mut false, &mut false);
 
                     assert_eq!(false, result);
                     assert_eq!(0x12, instruction.address_low_byte);
@@ -93,7 +93,7 @@ macro_rules! ret_with_condition {
 
                     let mut instruction = [<Ret $suffix>] { counter: 1, address_low_byte: 0 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory,&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory, &mut false, &mut false);
 
                     assert_eq!(false, result);
                     assert_eq!(0x00, instruction.address_low_byte);
@@ -112,7 +112,7 @@ macro_rules! ret_with_condition {
 
                     let mut instruction = [<Ret $suffix>] { counter: 0, address_low_byte: 0x12 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory,&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory, &mut false, &mut false);
 
                     assert_eq!(true, result);
                     assert_eq!(0x3412, registers.pc.get_value());
@@ -131,7 +131,7 @@ macro_rules! ret_with_condition {
 
                     let mut instruction = [<Ret $suffix>] { counter: 0, address_low_byte: 0x12 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory,&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory, &mut false, &mut false);
 
                     assert_eq!(true, result);
                     assert_eq!(0x0000, registers.pc.get_value());

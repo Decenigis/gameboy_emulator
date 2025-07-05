@@ -1,12 +1,12 @@
+use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
-use crate::memory::MemoryController;
+use crate::cpu::register::Register;
 use crate::cpu::register8::Register8;
 use crate::cpu::registers::Registers;
-use crate::cpu::register::Register;
-use crate::cpu::alu::ALU;
-use std::sync::Arc;
+use crate::memory::MemoryController;
 use parking_lot::Mutex;
 use paste::paste;
+use std::sync::Arc;
 
 macro_rules! dec_r {
     ($opcode:literal, $register:ident, $register_upper:ident) => {
@@ -26,7 +26,7 @@ macro_rules! dec_r {
                     $opcode
                 }
 
-                fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+                fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
                     alu.sub_no_carry(&mut *registers.$register.clone().borrow_mut(), &Register8::one());
 
                     true
@@ -49,7 +49,7 @@ macro_rules! dec_r {
 
                     let mut instruction = [<Dec $register_upper>] {};
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(true, result);
                     assert_eq!(0x11, registers.$register.borrow().get_value());

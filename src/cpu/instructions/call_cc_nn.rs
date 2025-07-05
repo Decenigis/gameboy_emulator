@@ -1,11 +1,11 @@
-use paste::paste;
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
+use parking_lot::Mutex;
+use paste::paste;
+use std::sync::Arc;
 
 macro_rules! call_cc_nn {
     ($opcode:literal, $suffix_lower:ident, $suffix:ident, $flag:ident, $wants_set:expr) => {
@@ -29,7 +29,7 @@ macro_rules! call_cc_nn {
                     $opcode
                 }
 
-                fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+                fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
                     if self.counter == 2 {
                         self.address = memory_controller.lock().get(registers.pc.get_value()) as u16;
                         self.address = self.address | ((memory_controller.lock().get(registers.pc.get_value() + 1) as u16) << 8);
@@ -80,7 +80,7 @@ macro_rules! call_cc_nn {
 
                     let mut instruction = [<Call $suffix Nn>] { counter: 2, address: 0 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(false, result);
                     assert_eq!(0x3412, instruction.address);
@@ -97,7 +97,7 @@ macro_rules! call_cc_nn {
 
                     let mut instruction = [<Call $suffix Nn>] { counter: 2, address: 0 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(false, result);
                     assert_eq!(0xC002, registers.pc.get_value());
@@ -113,7 +113,7 @@ macro_rules! call_cc_nn {
 
                     let mut instruction = [<Call $suffix Nn>] { counter: 1, address: 0 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(false, result);
                     assert_eq!(0xDFFE, registers.sp.get_value());
@@ -131,7 +131,7 @@ macro_rules! call_cc_nn {
 
                     let mut instruction = [<Call $suffix Nn>] { counter: 1, address: 0 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(false, result);
                     assert_eq!(0xE000, registers.sp.get_value());
@@ -149,7 +149,7 @@ macro_rules! call_cc_nn {
 
                     let mut instruction = [<Call $suffix Nn>] { counter: 0, address: 0x1234 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(true, result);
 
@@ -166,7 +166,7 @@ macro_rules! call_cc_nn {
 
                     let mut instruction = [<Call $suffix Nn>] { counter: 0, address: 0x1234 };
 
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
+                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(true, result);
 

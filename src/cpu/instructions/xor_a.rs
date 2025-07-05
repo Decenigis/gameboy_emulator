@@ -1,9 +1,9 @@
-use std::sync::Arc;
-use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 pub struct XorA {}
 
@@ -21,7 +21,7 @@ impl Instruction for XorA {
         0xAF
     }
 
-    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         alu.xor_internal(registers.a.clone(), registers.a.clone());
 
         true
@@ -32,8 +32,8 @@ impl Instruction for XorA {
 
 #[cfg(test)]
 mod tests {
-    use crate::cpu::register::Register;
     use super::*;
+    use crate::cpu::register::Register;
 
     #[test]
     fn from_opcode_returns_given_0xaf() {
@@ -63,7 +63,7 @@ mod tests {
 
         let mut instruction = XorA {};
 
-        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())) ,&mut false);
+        let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())) ,&mut false, &mut false);
 
         assert_eq!(true, result);
     }
@@ -75,7 +75,7 @@ mod tests {
 
         let mut instruction = XorA {};
 
-        instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false);
+        instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false, &mut false);
 
         assert_eq!(0x00, registers.a.borrow().get_value());
     }
