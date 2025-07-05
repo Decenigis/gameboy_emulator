@@ -37,8 +37,10 @@ mod sub_a_n; //0xD6
 mod ldh_n_a; //0xE0
 mod ldh_c_a; //0xE2
 mod ld_nn_a; //0xEA
+mod ldh_a_n; //0xF0
 mod di;
 mod cp_a_n; //0xFE
+
 
 pub use instruction::Instruction;
 pub use instruction::decode_instruction;
@@ -73,5 +75,6 @@ use sub_a_n::SubAN;     //0xD6
 use ldh_n_a::LdhNA;     //0xE0
 use ldh_c_a::LdhCA;     //0xE2
 use ld_nn_a::LdNNA;     //0xEA
+use ldh_a_n::LdhAN;     //0xF0
 use di::Di;             //0xF3
 use cp_a_n::CpAN;       //0xFE
