@@ -7,19 +7,19 @@ use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
 use crate::memory::{MemoryController, MemoryTrait};
 
-macro_rules! ld_rr_a {
+macro_rules! ld_a_rr {
     ($opcode:literal, $register:ident, $register_upper:ident) => {
         paste!{
-            pub struct [<Ld $register_upper A>] {
+            pub struct [<LdA $register_upper>] {
                 counter: u8
             }
 
-            impl Instruction for [<Ld $register_upper A>]  {
+            impl Instruction for [<LdA $register_upper>]  {
 
                 #[inline]
                 fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
                     if *opcode == $opcode {
-                        return Some(Box::new([<Ld $register_upper A>]  { counter: 1 }))
+                        return Some(Box::new([<LdA $register_upper>]  { counter: 1 }))
                     }
                     None
                 }
@@ -30,7 +30,7 @@ macro_rules! ld_rr_a {
 
                 fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool) -> bool {
                     if self.counter == 1 {
-                        memory_controller.lock().set(registers.$register.get_value(), registers.a.borrow().get_value());
+                        registers.a.borrow_mut().set_value(memory_controller.lock().get(registers.$register.get_value()));
                     }
                     else if self.counter == 0 {
                         return true;
@@ -42,10 +42,10 @@ macro_rules! ld_rr_a {
             }
 
             #[cfg(test)]
-            mod [<ld_ $register _a_tests>] {
+            mod [<ld_a_ $register _tests>] {
                 use super::*;
 
-                reusable_testing_macro!($opcode, [<Ld $register_upper A>] );
+                reusable_testing_macro!($opcode, [<LdA $register_upper>] );
 
                 #[test]
                 fn set_value_on_tick_1() {
@@ -54,13 +54,14 @@ macro_rules! ld_rr_a {
                     let memory = Arc::new(Mutex::new(MemoryController::new()));
 
                     registers.$register.set_value(0xC000);
+                    memory.lock().set(0xC000, 0x12);
 
-                    let mut instruction = [<Ld $register_upper A>]  { counter: 1 };
+                    let mut instruction = [<LdA $register_upper>]  { counter: 1 };
 
                     let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
 
                     assert_eq!(false, result);
-                    assert_eq!(0x12, memory.lock().get(0xC000));
+                    assert_eq!(0x12, registers.a.borrow().get_value());
                 }
 
                 #[test]
@@ -69,7 +70,7 @@ macro_rules! ld_rr_a {
                     let mut alu = ALU::new(registers.f.clone());
                     let memory = Arc::new(Mutex::new(MemoryController::new()));
 
-                    let mut instruction = [<Ld $register_upper A>]  { counter: 0 };
+                    let mut instruction = [<LdA $register_upper>]  { counter: 0 };
 
                     let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false);
 
@@ -80,14 +81,14 @@ macro_rules! ld_rr_a {
     }
 }
 
-ld_rr_a!(0x02, bc, Bc);
-ld_rr_a!(0x12, de, De);
-ld_rr_a!(0x77, hl, Hl);
+ld_a_rr!(0x0A, bc, Bc);
+ld_a_rr!(0x1A, de, De);
+ld_a_rr!(0x7E, hl, Hl);
 
-#[macro_export] macro_rules! ld_rr_a_decode_instruction {
+#[macro_export] macro_rules! ld_a_rr_decode_instruction {
     ($opcode:expr) => {
-        return_if_is_instruction!(LdBcA, $opcode);
-        return_if_is_instruction!(LdDeA, $opcode);
-        return_if_is_instruction!(LdHlA, $opcode);
+        return_if_is_instruction!(LdABc, $opcode);
+        return_if_is_instruction!(LdADe, $opcode);
+        return_if_is_instruction!(LdAHl, $opcode);
     }
 }

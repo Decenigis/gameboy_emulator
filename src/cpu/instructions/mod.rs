@@ -20,6 +20,7 @@ mod pop_rr;
 mod add_a_r;
 mod ld_rr_nn;
 mod ld_rr_a;
+mod ld_a_rr;
 mod call_cc_nn;
 
 mod dec_bc; //0x0B
@@ -62,6 +63,7 @@ use pop_rr::*;
 use add_a_r::*;
 use ld_rr_nn::*;
 use ld_rr_a::*;
+use ld_a_rr::*;
 use call_cc_nn::*;
 
 use dec_bc::DecBc;      //0x0B
