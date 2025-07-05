@@ -26,6 +26,7 @@ mod call_cc_nn;
 mod dec_bc; //0x0B
 mod jr_nz; //0x20
 mod ld_hl_nn; //0x21
+mod ldi_hl_a; //0x22
 mod inc_hl; //0x23
 mod ldi_a_hl; //0x2A
 mod ld_sp_nn; //0x31
@@ -68,6 +69,7 @@ use call_cc_nn::*;
 
 use dec_bc::DecBc;      //0x0B
 use jr_nz::JrNz;        //0x20
+use ldi_hl_a::LdiHlA;   //0x22
 use inc_hl::IncHl;      //0x23
 use ldi_a_hl::LdiAHl;   //0x2A
 use ld_sp_nn::LdSpNn;   //0x31
