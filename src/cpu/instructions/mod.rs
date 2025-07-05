@@ -18,6 +18,7 @@ mod push_rr;
 mod pop_rr;
 mod add_a_r;
 mod ld_rr_nn;
+mod call_cc_nn;
 
 mod dec_bc; //0x0B
 mod jr_nz; //0x20
@@ -57,6 +58,7 @@ use push_rr::*;
 use pop_rr::*;
 use add_a_r::*;
 use ld_rr_nn::*;
+use call_cc_nn::*;     
 
 use dec_bc::DecBc;      //0x0B
 use jr_nz::JrNz;        //0x20
