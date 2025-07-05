@@ -39,6 +39,7 @@ mod ldh_c_a; //0xE2
 mod ld_nn_a; //0xEA
 mod ldh_a_n; //0xF0
 mod di;
+mod ld_a_nn; //0xFA
 mod cp_a_n; //0xFE
 
 
@@ -77,4 +78,5 @@ use ldh_c_a::LdhCA;     //0xE2
 use ld_nn_a::LdNNA;     //0xEA
 use ldh_a_n::LdhAN;     //0xF0
 use di::Di;             //0xF3
+use ld_a_nn::LdANN;     //0xFA
 use cp_a_n::CpAN;       //0xFE
