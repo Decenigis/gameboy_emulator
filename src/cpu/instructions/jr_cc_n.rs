@@ -20,7 +20,7 @@ macro_rules! jr_cc_n {
                 #[inline]
                 fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
                     if *opcode == $opcode {
-                        return Some(Box::new([<Jr $suffix N>] { counter: 2, address: 0 }))
+                        return Some(Box::new([<Jr $suffix N>] { counter: 1, address: 0 }))
                     }
                     None
                 }

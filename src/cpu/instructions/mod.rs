@@ -24,6 +24,7 @@ mod ld_rr_a;
 mod ld_a_rr;
 mod call_cc_nn;
 mod jr_cc_n;
+mod jp_cc_nn;
 
 mod dec_bc; //0x0B
 mod ld_hl_nn; //0x21
@@ -76,6 +77,7 @@ use ld_rr_a::*;
 use ld_a_rr::*;
 use call_cc_nn::*;
 use jr_cc_n::*;
+use jp_cc_nn::*;
 
 use dec_bc::DecBc;      //0x0B
 use ldi_hl_a::LdiHlA;   //0x22
