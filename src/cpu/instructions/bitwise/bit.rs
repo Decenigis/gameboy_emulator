@@ -11,13 +11,13 @@ use std::sync::Arc;
 macro_rules! bit_b_r {
     ($opcode:literal, $bit:literal, $reg:ident, $reg_upper:ident) => {
         paste!{
-            pub struct [<Bit $bit $reg_upper>] { counter: u8 }
+            pub struct [<Bit $bit $reg_upper>] {  }
 
             impl Instruction for [<Bit $bit $reg_upper>] {
                 #[inline]
                 fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
                     if *opcode == $opcode {
-                        return Some(Box::new([<Bit $bit $reg_upper>]{ counter: 1 }))
+                        return Some(Box::new([<Bit $bit $reg_upper>]{ }))
                     }
                     None
                 }
@@ -27,19 +27,13 @@ macro_rules! bit_b_r {
                 }
 
                 fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
-                    if self.counter == 1 {
-                        let mut flags = registers.f.borrow_mut();
+                    let mut flags = registers.f.borrow_mut();
 
-                        flags.set_bit(ALU::SUB_FLAG, false);
-                        flags.set_bit(ALU::HALF_CARRY_FLAG, true);
-                        flags.set_bit(ALU::ZERO_FLAG, registers.$reg.borrow().get_bit($bit));
-                    }
-                    else if self.counter == 0 {
-                        return true;
-                    }
+                    flags.set_bit(ALU::SUB_FLAG, false);
+                    flags.set_bit(ALU::HALF_CARRY_FLAG, true);
+                    flags.set_bit(ALU::ZERO_FLAG, registers.$reg.borrow().get_bit($bit));
 
-                    self.counter -= 1;
-                    false
+                    true
                 }
             }
 
@@ -58,11 +52,11 @@ macro_rules! bit_b_r {
 
                     registers.$reg.borrow_mut().set_bit($bit, false);
 
-                    let mut instruction = [<Bit $bit $reg_upper>] { counter: 1};
+                    let mut instruction = [<Bit $bit $reg_upper>] {};
 
                     let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
-                    assert_eq!(false, result);
+                    assert_eq!(true, result);
                     assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
                     assert_eq!(true, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
                     assert_eq!(false, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
@@ -75,27 +69,14 @@ macro_rules! bit_b_r {
 
                     registers.$reg.borrow_mut().set_bit($bit, true);
 
-                    let mut instruction = [<Bit $bit $reg_upper>] { counter: 1 };
-
-                    let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
-
-                    assert_eq!(false, result);
-                    assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
-                    assert_eq!(true, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
-                    assert_eq!(true, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
-                }
-
-                #[test]
-                fn get_next_instruction_on_tick_0() {
-                    let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
-                    let memory = Arc::new(Mutex::new(MemoryController::new()));
-                    let mut alu = ALU::new(registers.f.clone());
-
-                    let mut instruction = [<Bit $bit $reg_upper>] { counter: 0 };
+                    let mut instruction = [<Bit $bit $reg_upper>] {};
 
                     let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(true, result);
+                    assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
+                    assert_eq!(true, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+                    assert_eq!(true, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
                 }
             }
         }
