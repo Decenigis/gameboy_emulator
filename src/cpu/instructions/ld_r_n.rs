@@ -89,7 +89,7 @@ ld_r_n!(0x06, b, B);
 ld_r_n!(0x0E, c, C);
 ld_r_n!(0x16, d, D);
 ld_r_n!(0x1E, e, E);
-ld_r_n!(0x2E, h, H);
+ld_r_n!(0x26, h, H);
 ld_r_n!(0x2E, l, L);
 
 #[macro_export] macro_rules! ld_r_n_decode_instruction {
