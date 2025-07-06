@@ -38,8 +38,9 @@ mod xor_a; //0xAF
 mod or_b; //0xB0
 mod jp_nn; //0xC3
 mod ret; //0xC9
-mod call_nn; //0xCD
 mod add_a_n; //0xC6
+mod bitwise; //0xCB
+mod call_nn; //0xCD
 mod sub_a_n; //0xD6
 mod ldh_n_a; //0xE0
 mod ldh_c_a; //0xE2
@@ -49,6 +50,7 @@ mod di; //0xF3
 mod ld_a_nn; //0xFA
 mod ei; //0xFB
 mod cp_a_n; //0xFE
+
 
 
 pub use instruction::Instruction;
@@ -84,6 +86,7 @@ use xor_a::XorA;        //0xAF
 use or_b::OrB;          //0xB0
 use jp_nn::JpNn;        //0xC3
 use ret::Ret;           //0xC9
+use bitwise::Bitwise;   //0xCB
 use call_nn::CallNn;    //0xCD
 use add_a_n::AddAN;     //0xD6
 use sub_a_n::SubAN;     //0xD6
