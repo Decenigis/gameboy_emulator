@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use parking_lot::Mutex;
-use crate::bit_b_r_decode_instruction;
+use crate::{bit_b_r_decode_instruction, swap_r_decode_instruction};
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::bitwise::bitwise_bad_instruction::BitwiseBadInstruction;
 use crate::cpu::instructions::Instruction;
@@ -16,6 +16,7 @@ pub struct Bitwise {
 impl Bitwise {
     pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
         bit_b_r_decode_instruction!(opcode);
+        swap_r_decode_instruction!(opcode);
 
         BitwiseBadInstruction::from_opcode(opcode).unwrap()
     }
