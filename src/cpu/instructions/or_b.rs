@@ -22,7 +22,7 @@ impl Instruction for OrB {
     }
 
     fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
-        alu.or_internal(registers.a.clone(), registers.c.clone());
+        alu.or_internal(registers.a.clone(), registers.b.clone());
 
         true
     }
@@ -72,7 +72,7 @@ mod tests {
     fn act_results_in_zero() {
         let mut registers = Registers::new(0, 0, 0, 0, 0, 0);
         registers.a.borrow_mut().set_value(0xF0);
-        registers.c.borrow_mut().set_value(0x0F);
+        registers.b.borrow_mut().set_value(0x0F);
         let mut alu = ALU::new(registers.f.clone());
 
         let mut instruction = OrB {};

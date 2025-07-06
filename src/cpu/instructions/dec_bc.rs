@@ -28,7 +28,7 @@ impl Instruction for DecBc {
 
     fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         if self.counter == 1 {
-            registers.bc.increment();
+            registers.bc.decrement();
         }
         else if self.counter == 0 {
             return true;
@@ -78,7 +78,7 @@ mod tests {
         let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(false, result);
-        assert_eq!(0x1235, registers.bc.get_value());
+        assert_eq!(0x1233, registers.bc.get_value());
     }
 
     #[test]

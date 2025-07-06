@@ -1,8 +1,10 @@
+use std::fs::File;
+use std::io::Write;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::instruction::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
-use crate::memory::MemoryController;
+use crate::memory::{MemoryController, MemoryTrait};
 use parking_lot::Mutex;
 use std::sync::Arc;
 
@@ -22,9 +24,19 @@ impl Instruction for BadInstruction {
         self.opcode
     }
 
-    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
+    fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         println!("Bad instruction '{:#X}' at address '{:#X}'", self.opcode, registers.pc.get_value().wrapping_sub(1));
-        false
+
+        let mut file = File::create("memdump.bin").unwrap();
+        let mut memory: Vec<u8> = vec![];
+
+        for i in 0..0xFFFF {
+            memory.push(memory_controller.lock().get(i));
+        }
+
+        file.write_all(memory.as_slice()).unwrap();
+
+        panic!("Bad instruction encountered: {:#X}", self.opcode);
     }
 }
 
