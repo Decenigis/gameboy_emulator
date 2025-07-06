@@ -46,6 +46,7 @@ mod add_a_n; //0xC6
 mod bitwise; //0xCB
 mod call_nn; //0xCD
 mod sub_a_n; //0xD6
+mod reti; //0xD9
 mod ldh_n_a; //0xE0
 mod ldh_c_a; //0xE2
 mod and_a_n; //0xE6
@@ -95,11 +96,12 @@ use add_a_a::AddAA;     //0x87
 use xor_a::XorA;        //0xAF
 use or_b::OrB;          //0xB0
 use jp_nn::JpNn;        //0xC3
+use add_a_n::AddAN;     //0xC6
 use ret::Ret;           //0xC9
 use bitwise::Bitwise;   //0xCB
 use call_nn::CallNn;    //0xCD
-use add_a_n::AddAN;     //0xD6
 use sub_a_n::SubAN;     //0xD6
+use reti::Reti;         //0xD9
 use ldh_n_a::LdhNA;     //0xE0
 use ldh_c_a::LdhCA;     //0xE2
 use and_a_n::AndAN;     //0xE6

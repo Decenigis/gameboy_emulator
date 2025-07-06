@@ -83,6 +83,12 @@ impl GameBoyCPU {
         match self.interrupt { //this prevents interrupting mid-instruction
             Some(interrupt) => {
                 self.interrupt = None;
+
+                self.registers.sp.decrement();
+                memory.lock().set(self.registers.sp.get_value(), ((self.registers.pc.get_value() & 0xFF00) >> 8) as u8);
+                self.registers.sp.decrement();
+                memory.lock().set(self.registers.sp.get_value(), (self.registers.pc.get_value() & 0xFF) as u8);
+
                 self.registers.pc.set_value(interrupt.get_address());
             }
             None => {}
@@ -172,7 +178,7 @@ mod tests {
     }
 
     #[test]
-    fn interrupt_properly() {
+    fn interrupt_sets_address_properly() {
         let memory = Arc::new(Mutex::new(MemoryController::new()));
         memory.lock().set(0xFFFF, 0x01);
         memory.lock().set(0xFF0F, 0x00);
@@ -185,6 +191,26 @@ mod tests {
         cpu.clock(memory.clone());
 
         assert_eq!(0x0041, cpu.registers.pc.get_value());
+    }
+
+    #[test]
+    fn interrupt_pushes_to_stack() {
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+        memory.lock().set(0xFFFF, 0x01);
+        memory.lock().set(0xFF0F, 0x00);
+
+        let mut cpu = GameBoyCPU::new_with_nop();
+        cpu.registers.sp.set_value(0xD000);
+        cpu.registers.pc.set_value(0x1234);
+
+        cpu.enable_interrupts = true;
+
+        cpu.try_interrupt(memory.clone(), Interrupt::VBlank);
+        cpu.clock(memory.clone());
+
+        assert_eq!(0xCFFE, cpu.registers.sp.get_value());
+        assert_eq!(0x34, memory.lock().get(0xCFFE));
+        assert_eq!(0x12, memory.lock().get(0xCFFF));
     }
 
     #[test]
