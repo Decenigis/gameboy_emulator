@@ -30,6 +30,7 @@ mod ld_hl_nn; //0x21
 mod ldi_hl_a; //0x22
 mod inc_hl; //0x23
 mod ldi_a_hl; //0x2A
+mod cpl_a; //0x2F
 mod ld_sp_nn; //0x31
 mod ld_hl_n; //0x36
 mod halt; //0x76
@@ -50,6 +51,7 @@ mod di; //0xF3
 mod ld_a_nn; //0xFA
 mod ei; //0xFB
 mod cp_a_n; //0xFE
+
 
 
 
@@ -78,6 +80,7 @@ use dec_bc::DecBc;      //0x0B
 use ldi_hl_a::LdiHlA;   //0x22
 use inc_hl::IncHl;      //0x23
 use ldi_a_hl::LdiAHl;   //0x2A
+use cpl_a::CplA;        //0x2F
 use ld_sp_nn::LdSpNn;   //0x31
 use ld_hl_n::LdHlN;     //0x36
 use halt::Halt;         //0x76
