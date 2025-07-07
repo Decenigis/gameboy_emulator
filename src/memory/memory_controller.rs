@@ -38,7 +38,7 @@ impl MemoryTrait for MemoryController {
             self.hram.get(position)
         }
         else {
-            0xFF
+            0x00
         }
     }
 

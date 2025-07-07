@@ -1,4 +1,6 @@
 use std::cell::RefCell;
+use std::fs::File;
+use std::io::Write;
 use std::rc::Rc;
 use std::sync::Arc;
 use dec_gl::{GLHandler, UICamera, Vertex2d};
@@ -10,9 +12,10 @@ use mockall_double::double;
 use dec_gl::texture::{Texture2Du8, Texture3Du8};
 use dec_gl::types::{ivec2, vec4, Vec3};
 use dialog::{DialogBox, FileSelection};
+use glfw::{Action, Key, WindowEvent};
 use parking_lot::Mutex;
 use crate::cpu::GameBoyCPU;
-use crate::memory::MemoryController;
+use crate::memory::{MemoryController, MemoryTrait};
 use crate::renderer::VideoProcessor;
 use crate::system::MainBoard;
 
@@ -112,7 +115,7 @@ impl App {
 
         let mut main_board = MainBoard::new(
             cpu,
-            memory_controller,
+            memory_controller.clone(),
             video_processor
         );
 
@@ -123,7 +126,16 @@ impl App {
 
             for event in self.gl_handler.borrow_mut().handle_events() {
                 match event {
-                    _ => { },
+                    WindowEvent::Key(Key::D, _, Action::Press, _) => {
+                        let mut file = File::create("memdump.bin").unwrap();
+                        let mut memory: Vec<u8> = vec![];
+
+                        for i in 0..0xFFFF {
+                            memory.push(memory_controller.lock().get(i));
+                        }
+
+                        file.write_all(memory.as_slice()).unwrap(); },
+                    _ => {}
                 }
             }
 
