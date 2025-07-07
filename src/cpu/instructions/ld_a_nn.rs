@@ -37,7 +37,7 @@ impl Instruction for LdANN {
             registers.pc.increment();
         }
         else if self.counter == 1 {
-            memory_controller.lock().set(self.address, registers.a.borrow().get_value());
+            registers.a.borrow_mut().set_value(memory_controller.lock().get(self.address))
         }
         else if self.counter == 0 {
             return true;

@@ -17,6 +17,7 @@ mod inc_rr;
 mod dec_r;
 mod push_rr;
 mod pop_rr;
+mod or_a_r;
 mod add_a_r;
 mod adc_a_r;
 mod add_hl_rr;
@@ -39,7 +40,6 @@ mod ld_hl_n; //0x36
 mod halt; //0x76
 mod add_a_a; //0x87
 mod xor_a; //0xAF
-mod or_b; //0xB0
 mod jp_nn; //0xC3
 mod ret; //0xC9
 mod add_a_n; //0xC6
@@ -73,6 +73,7 @@ use inc_rr::*;
 use dec_r::*;
 use push_rr::*;
 use pop_rr::*;
+use or_a_r::*;
 use add_a_r::*;
 use adc_a_r::*;
 use add_hl_rr::*;
@@ -94,7 +95,6 @@ use ld_hl_n::LdHlN;     //0x36
 use halt::Halt;         //0x76
 use add_a_a::AddAA;     //0x87
 use xor_a::XorA;        //0xAF
-use or_b::OrB;          //0xB0
 use jp_nn::JpNn;        //0xC3
 use add_a_n::AddAN;     //0xC6
 use ret::Ret;           //0xC9
