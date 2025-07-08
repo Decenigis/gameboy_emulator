@@ -47,6 +47,7 @@ mod bitwise; //0xCB
 mod call_nn; //0xCD
 mod sub_a_n; //0xD6
 mod reti; //0xD9
+mod sbc_a_n; //0xDE
 mod ldh_n_a; //0xE0
 mod ldh_c_a; //0xE2
 mod and_a_n; //0xE6
@@ -102,6 +103,7 @@ use bitwise::Bitwise;   //0xCB
 use call_nn::CallNn;    //0xCD
 use sub_a_n::SubAN;     //0xD6
 use reti::Reti;         //0xD9
+use sbc_a_n::SbcAN;     //0xDE
 use ldh_n_a::LdhNA;     //0xE0
 use ldh_c_a::LdhCA;     //0xE2
 use and_a_n::AndAN;     //0xE6

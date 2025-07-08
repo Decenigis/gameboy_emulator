@@ -196,6 +196,20 @@ impl ALU {
 
         self.flags.borrow_mut().set_bit(Self::CARRY_FLAG, carry_flag);
     }
+
+    pub fn sbc<T: Register>(&self, a: &mut T, b: &T)
+    where
+        <T as Register>::ValueType: From<<<T as Register>::ValueType as Shl<i32>>::Output>,
+        <T as Register>::ValueType: From<<<T as Register>::ValueType as Add>::Output>,
+    {
+        let carry = self.flags.borrow().get_bit(Self::CARRY_FLAG);
+
+        self.sub(a, b); //Flags are reset by this method so no need for direct manipulation here
+
+        if carry {
+            self.sub_internal(a, &T::one());
+        }
+    }
 }
 
 
@@ -974,4 +988,153 @@ mod tests {
 
         assert_eq!(flags.borrow().get_bit(ALU::CARRY_FLAG), true);
     }
+
+    #[test]
+    fn sbcs_u8_no_flags () {
+        let mut a = Register8::new(0x10);
+        let b = Register8::new(0x01);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.sbc(&mut a, &b);
+
+        assert_eq!(a.get_value(), 0x0F);
+    }
+
+    #[test]
+    fn sbcs_u16_no_flags () {
+        let mut a = Register16::new(0x101);
+        let b = Register16::new(0x02);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.sbc(&mut a, &b);
+
+        assert_eq!(a.get_value(), 0xFF);
+    }
+
+    #[test]
+    fn sbcs_u8_carry_flag () {
+        let mut a = Register8::new(0x10);
+        let b = Register8::new(0x01);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        flags.borrow_mut().set_bit(ALU::CARRY_FLAG, true);
+        let alu = ALU::new(flags.clone());
+
+        alu.sbc(&mut a, &b);
+
+        assert_eq!(0x0E, a.get_value());
+    }
+
+    #[test]
+    fn sbcs_u16_carry_flag () {
+        let mut a = Register16::new(0x101);
+        let b = Register16::new(0x02);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        flags.borrow_mut().set_bit(ALU::CARRY_FLAG, true);
+        let alu = ALU::new(flags.clone());
+
+        alu.sbc(&mut a, &b);
+
+        assert_eq!(0xFE, a.get_value());
+    }
+
+    #[test]
+    fn sbc_sets_sub_bit() {
+        let mut a = Register8::new(0x01);
+        let b = Register8::new(0x02);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        flags.borrow_mut().set_bit(ALU::SUB_FLAG, false);
+
+        alu.sbc(&mut a, &b);
+
+        assert_eq!(flags.borrow().get_bit(ALU::SUB_FLAG), true);
+    }
+
+    #[test]
+    fn sbc_sets_zero_bit_when_zero() {
+        let mut a = Register8::new(0x01);
+        let b = Register8::new(0x01);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.sbc(&mut a, &b);
+
+        assert_eq!(true, flags.borrow().get_bit(ALU::ZERO_FLAG));
+    }
+
+    #[test]
+    fn sbc_resets_zero_bit_when_not_zero() {
+        let mut a = Register8::new(0xEF);
+        let b = Register8::new(0x01);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.sbc(&mut a, &b);
+
+        assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
+    }
+
+    #[test]
+    fn sbc_sets_half_carry_flag_correctly_for_u8() {
+        let mut a = Register8::new(0x18);
+        let b = Register8::new(0x0F);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(true, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+    }
+
+    #[test]
+    fn sbc_does_not_set_half_carry_flag_correctly_for_u8() {
+        let mut a = Register8::new(0x02);
+        let b = Register8::new(0x02);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+    }
+
+    #[test]
+    fn sbc_sets_half_carry_flag_correctly_for_u16() {
+        let mut a = Register16::new(0x1800);
+        let b = Register16::new(0x0F00);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(true, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+    }
+
+    #[test]
+    fn sbc_does_not_set_half_carry_flag_correctly_for_u16() {
+        let mut a = Register16::new(0xF0);
+        let b = Register16::new(0xF0);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+    }
+
+    #[test]
+    fn sbc_sets_carry_flag() {
+        let mut a = Register8::new(0x01);
+        let b = Register8::new(0x10);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.sbc(&mut a, &b);
+
+        assert_eq!(flags.borrow().get_bit(ALU::CARRY_FLAG), true);
+    }
+
 }
