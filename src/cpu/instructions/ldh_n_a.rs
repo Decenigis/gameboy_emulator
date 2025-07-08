@@ -36,10 +36,6 @@ impl Instruction for LdhNA {
             memory_controller.lock().set(self.address, registers.a.borrow().get_value());
         }
         else if self.counter == 0 {
-
-            if self.address != 0xFF41 && self.address != 0xFF44 {
-                println!("WRITE (0x{:04X}) -> 0x{:04X} - {:0X}", registers.pc.get_value(), self.address, registers.a.borrow().get_value());
-            }
             return true;
         }
 

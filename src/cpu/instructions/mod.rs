@@ -30,6 +30,7 @@ mod jr_cc_n;
 mod jp_cc_nn;
 
 mod dec_bc; //0x0B
+mod jr_n; //0x18
 mod ld_hl_nn; //0x21
 mod ldi_hl_a; //0x22
 mod inc_hl; //0x23
@@ -87,6 +88,7 @@ use jr_cc_n::*;
 use jp_cc_nn::*;
 
 use dec_bc::DecBc;      //0x0B
+use jr_n::JrN;          //0x18
 use ldi_hl_a::LdiHlA;   //0x22
 use inc_hl::IncHl;      //0x23
 use ldi_a_hl::LdiAHl;   //0x2A
