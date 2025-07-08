@@ -201,7 +201,7 @@ impl VideoProcessor {
                                    &ivec2((video_io_guard.get_win_x() as i32) - 8, video_io_guard.get_win_y() as i32),
                                    &video_io_guard.get_bg_pal()
             );
-            self.bind_textures_for_background(video_io_guard.get_lcd_ctrl());
+            self.bind_textures_for_window(video_io_guard.get_lcd_ctrl());
         }
 
         self.background_renderable.draw();
