@@ -31,7 +31,7 @@ macro_rules! bit_b_r {
 
                     flags.set_bit(ALU::SUB_FLAG, false);
                     flags.set_bit(ALU::HALF_CARRY_FLAG, true);
-                    flags.set_bit(ALU::ZERO_FLAG, registers.$reg.borrow().get_bit($bit));
+                    flags.set_bit(ALU::ZERO_FLAG, !registers.$reg.borrow().get_bit($bit));
 
                     true
                 }
@@ -50,7 +50,7 @@ macro_rules! bit_b_r {
                     let memory = Arc::new(Mutex::new(MemoryController::new()));
                     let mut alu = ALU::new(registers.f.clone());
 
-                    registers.$reg.borrow_mut().set_bit($bit, false);
+                    registers.$reg.borrow_mut().set_bit($bit, true);
 
                     let mut instruction = [<Bit $bit $reg_upper>] {};
 
@@ -67,7 +67,7 @@ macro_rules! bit_b_r {
                     let memory = Arc::new(Mutex::new(MemoryController::new()));
                     let mut alu = ALU::new(registers.f.clone());
 
-                    registers.$reg.borrow_mut().set_bit($bit, true);
+                    registers.$reg.borrow_mut().set_bit($bit, false);
 
                     let mut instruction = [<Bit $bit $reg_upper>] {};
 
