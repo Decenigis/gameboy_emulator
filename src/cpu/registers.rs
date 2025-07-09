@@ -1,7 +1,9 @@
 use std::cell::RefCell;
+use std::fmt::Display;
 use std::rc::Rc;
 use crate::cpu::register16::Register16;
 use crate::cpu::register8::Register8;
+use crate::cpu::register::Register;
 
 pub struct Registers {
     pub a: Rc<RefCell<Register8>>,
@@ -22,6 +24,14 @@ pub struct Registers {
 
     pub pc: Register16,
     pub sp: Register16,
+}
+
+impl Display for Registers {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "AF: {:04X}, BC: {:04X}, DE: {:04X}, HL: {:04X}, PC: {:04X}, SP: {:04X}",
+               self.af.get_value(), self.bc.get_value(), self.de.get_value(),
+               self.hl.get_value(), self.pc.get_value(), self.sp.get_value())
+    }
 }
 
 impl Registers {

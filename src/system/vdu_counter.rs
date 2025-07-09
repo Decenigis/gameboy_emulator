@@ -10,7 +10,7 @@ use crate::system::clock_event::ClockEvent;
 
 
 pub enum VDUCounter {
-    LCDOn { video_io: Arc<Mutex<VideoIO>>, line_counter: u32 },
+    LCDOn { video_io: Arc<Mutex<VideoIO>>, line_counter: u32, vblank: bool },
     LCDOff { video_io: Arc<Mutex<VideoIO>>, generic_frame_counter: u32 },
 }
 
@@ -19,7 +19,7 @@ impl VDUCounter {
         let lcd_enabled = LCDCMask::mask(video_io.lock().get_lcd_ctrl(), LCDCMask::LCD_ENABLE);
 
         if lcd_enabled {
-            VDUCounter::LCDOn { video_io, line_counter: 0 }
+            VDUCounter::LCDOn { video_io, line_counter: 0, vblank: false}
         }
         else {
             VDUCounter::LCDOff { video_io, generic_frame_counter: 0 }
@@ -30,16 +30,31 @@ impl VDUCounter {
         let mut clock_events = Vec::new();
 
         match self {
-            VDUCounter::LCDOn { video_io, line_counter } => {
+            VDUCounter::LCDOn { video_io, line_counter, vblank } => {
                 if LCDCMask::mask(video_io.lock().get_lcd_ctrl(), LCDCMask::LCD_ENABLE) {
                     if *line_counter % 2 == 0 {
                         clock_events.push(ClockEvent::CPUClock)
                     }
 
                     if *line_counter == 0 {
-                        Self::reset_line_counter(video_io, &mut clock_events, line_counter);
+                        Self::reset_line_counter(video_io, &mut clock_events, line_counter, vblank);
                     } else {
                         *line_counter -= 1;
+                    }
+
+
+                    if !*vblank {
+                        let masked_lcd_stat = video_io.lock().get_lcd_stat() & 0x7C;
+
+                        if *line_counter > 184 {
+                            video_io.lock().set_lcd_stat(masked_lcd_stat | 0x82);
+                        }
+                        else if *line_counter < 100 {
+                            video_io.lock().set_lcd_stat(masked_lcd_stat | 0x83);
+                        }
+                        else {
+                            video_io.lock().set_lcd_stat(masked_lcd_stat | 0x80);
+                        }
                     }
                 }
                 else {
@@ -86,22 +101,37 @@ impl VDUCounter {
         clock_events
     }
 
-    fn reset_line_counter (video_io: &mut Arc<Mutex<VideoIO>>, clock_events: &mut Vec<ClockEvent>, counter: &mut u32) {
+    fn reset_line_counter (video_io: &mut Arc<Mutex<VideoIO>>, clock_events: &mut Vec<ClockEvent>, counter: &mut u32, vblank: &mut bool) {
         let old_ly = video_io.lock().get_ly();
         let ly = old_ly + 1;
         video_io.lock().set_ly(ly);
 
+        let masked_lcd_stat = video_io.lock().get_lcd_stat() & 0x7C;
 
         if ly < 0x90 {
+            *vblank = false;
+
             clock_events.push(ClockEvent::DrawLine);
+
             *counter = 224;
         } else if ly == 0x90 {
             clock_events.push(ClockEvent::VBlankInterrupt);
             clock_events.push(ClockEvent::SendFrame);
+
+            *vblank = true;
+
+            video_io.lock().set_lcd_stat(masked_lcd_stat | 0x81);
+
             *counter = 274;
         } else if ly <= 0x98 {
+            *vblank = true;
+
+            video_io.lock().set_lcd_stat(masked_lcd_stat | 0x81);
+
             *counter = 274;
         } else {
+            *vblank = false;
+
             video_io.lock().set_ly(0);
             clock_events.push(ClockEvent::DrawLine);
 
@@ -142,7 +172,7 @@ mod tests {
         let video_io = Arc::new(Mutex::new(VideoIO::new()));
 
         video_io.lock().set(0xFF40, 0x80);
-        let mut vdu_counter =VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 2 };
+        let mut vdu_counter =VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 2, vblank: false };
 
         video_io.lock().set(0xFF40, 0x00);
         vdu_counter.tick();
@@ -155,7 +185,7 @@ mod tests {
         let video_io = Arc::new(Mutex::new(VideoIO::new()));
 
         video_io.lock().set(0xFF40, 0x80);
-        let mut vdu_counter =VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 1 };
+        let mut vdu_counter =VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 1, vblank: false };
 
         video_io.lock().set(0xFF40, 0x00);
         vdu_counter.tick();
@@ -195,7 +225,7 @@ mod tests {
         video_io.lock().set(0xFF40, 0x80);
         video_io.lock().set_ly(0x01); //generic mid frame
 
-        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 2 };
+        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 2, vblank: false };
 
         let events = vdu_counter.tick();
 
@@ -209,7 +239,7 @@ mod tests {
         video_io.lock().set(0xFF40, 0x80);
         video_io.lock().set_ly(0x01); //generic mid frame
 
-        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 1 };
+        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 1, vblank: false };
 
         let events = vdu_counter.tick();
 
@@ -222,7 +252,7 @@ mod tests {
         video_io.lock().set(0xFF40, 0x80);
         video_io.lock().set_ly(0x01); //generic mid frame
 
-        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0 };
+        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
         let events = vdu_counter.tick();
 
@@ -235,7 +265,7 @@ mod tests {
         video_io.lock().set(0xFF40, 0x80);
         video_io.lock().set_ly(0x8F); //generic mid frame
 
-        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0 };
+        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
         let events = vdu_counter.tick();
 
@@ -247,7 +277,7 @@ mod tests {
         video_io.lock().set(0xFF40, 0x80);
         video_io.lock().set_ly(0x8F); //generic mid frame
 
-        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0 };
+        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
         let events = vdu_counter.tick();
 
@@ -260,7 +290,7 @@ mod tests {
         video_io.lock().set(0xFF40, 0x80);
         video_io.lock().set_ly(0x92); //generic mid frame
 
-        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0 };
+        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
         let events = vdu_counter.tick();
 
@@ -273,7 +303,7 @@ mod tests {
         video_io.lock().set(0xFF40, 0x80);
         video_io.lock().set_ly(0x98); //generic mid frame
 
-        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0 };
+        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
         vdu_counter.tick();
 
@@ -286,7 +316,7 @@ mod tests {
         video_io.lock().set(0xFF40, 0x80);
         video_io.lock().set_ly(0x98); //generic mid frame
 
-        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0 };
+        let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
         let events = vdu_counter.tick();
 

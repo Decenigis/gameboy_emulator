@@ -163,7 +163,7 @@ impl VRAM {
             None
         }
     }
-    
+
     pub fn set_not_stale(&mut self) {
         self.tile_bank_0_stale = false;
         self.tile_bank_1_stale = false;
@@ -178,114 +178,114 @@ impl VRAM {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn tile_bank_0_is_correctly_written_to() {
         let mut vram = VRAM::new();
-        
+
         vram.set(0x8000, 0x12);
-        
+
         assert_eq!(vram.get(0x8000), 0x12);
     }
-    
+
     #[test]
     fn tile_bank_1_is_correctly_written_to() {
         let mut vram = VRAM::new();
-        
+
         vram.set(0x8800, 0x34);
-        
+
         assert_eq!(vram.get(0x8800), 0x34);
     }
-    
+
     #[test]
     fn tile_bank_2_is_correctly_written_to() {
         let mut vram = VRAM::new();
-        
+
         vram.set(0x9000, 0x56);
-        
+
         assert_eq!(vram.get(0x9000), 0x56);
     }
-    
+
     #[test]
     fn map_bank_0_is_correctly_written_to() {
         let mut vram = VRAM::new();
-        
+
         vram.set(0x9800, 0x78);
-        
+
         assert_eq!(vram.get(0x9800), 0x78);
     }
-    
+
     #[test]
     fn map_bank_1_is_correctly_written_to() {
         let mut vram = VRAM::new();
-        
+
         vram.set(0x9C00, 0x9A);
-        
+
         assert_eq!(vram.get(0x9C00), 0x9A);
     }
-    
+
     #[test]
     fn tile_bank_0_correctly_updated() {
         let mut vram = VRAM::new();
         vram.set_not_stale();
-        
+
         vram.set(0x8000, 0x12);
-        
+
         let tile_bank_0 = vram.get_tile_bank_0_if_stale().unwrap();
-        
+
         assert_eq!(tile_bank_0[0], 0x12);
     }
-    
+
     #[test]
     fn get_tile_bank_1_correctly_updated() {
         let mut vram = VRAM::new();
         vram.set_not_stale();
         vram.set(0x8800, 0x34);
-        
+
         let tile_bank_1 = vram.get_tile_bank_1_if_stale().unwrap();
-        
+
         assert_eq!(tile_bank_1[0], 0x34);
     }
-    
+
     #[test]
     fn get_tile_bank_2_correctly_updated() {
         let mut vram = VRAM::new();
         vram.set_not_stale();
         vram.set(0x9000, 0x56);
-        
+
         let tile_bank_2 = vram.get_tile_bank_2_if_stale().unwrap();
-        
+
         assert_eq!(tile_bank_2[0], 0x56);
     }
-    
+
     #[test]
     fn get_map_bank_0_correctly_updated() {
         let mut vram = VRAM::new();
         vram.set_not_stale();
         vram.set(0x9800, 0x78);
-        
+
         let map_bank_0 = vram.get_map_bank_0_if_stale().unwrap();
-        
+
         assert_eq!(map_bank_0[0], 0x78);
     }
-    
+
     #[test]
     fn get_map_bank_1_correctly_updated() {
         let mut vram = VRAM::new();
         vram.set_not_stale();
         vram.set(0x9C00, 0x9A);
-        
+
         let map_bank_1 = vram.get_map_bank_1_if_stale().unwrap();
-        
+
         assert_eq!(map_bank_1[0], 0x9A);
     }
-    
+
     #[test]
     fn set_not_stale_sets_all_stale_flags_to_false() {
         let mut vram = VRAM::new();
-        
+
         vram.set_not_stale();
-        
+
         assert_eq!(vram.get_tile_bank_0_if_stale(), None);
         assert_eq!(vram.get_tile_bank_1_if_stale(), None);
         assert_eq!(vram.get_tile_bank_2_if_stale(), None);

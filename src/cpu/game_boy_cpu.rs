@@ -1,3 +1,4 @@
+use std::fs;
 use std::sync::Arc;
 use parking_lot::Mutex;
 use crate::cpu::alu::ALU;
@@ -15,6 +16,20 @@ pub struct GameBoyCPU {
     is_halted: bool,
     current_instruction: Box<dyn Instruction>,
     interrupt: Option<Interrupt>,
+
+    callstack: Vec<u16>
+}
+
+impl Drop for GameBoyCPU {
+    fn drop(&mut self) {
+        let mut a = String::new();
+
+        for val in self.callstack.iter() {
+            a.push_str(&format!("{:04X}\n", val));
+        }
+
+        fs::write("./callstack", a);
+    }
 }
 
 
@@ -75,6 +90,8 @@ impl GameBoyCPU {
             is_halted: false,
             current_instruction: first_instruction,
             interrupt: None,
+
+            callstack: Vec::new()
         }
     }
 
@@ -93,6 +110,12 @@ impl GameBoyCPU {
             }
             None => {}
         }
+
+        self.callstack.push(self.registers.pc.get_value());
+
+        // if self.registers.pc.get_value() == 0x316 {
+        //     panic!("{}", self.registers);
+        // }
 
         let opcode = memory.lock().get(self.registers.pc.get_value());
 

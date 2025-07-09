@@ -13,7 +13,7 @@ fn main() {
                          800,
                          720,
                          false,
-                         true)
+                         false)
     {
         Ok(gl_handler) => {
             let mut app = App::new(env::args().collect(), gl_handler.clone());

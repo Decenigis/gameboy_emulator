@@ -88,6 +88,10 @@ impl VideoIO {
     pub fn get_lcd_stat(&self) -> u8 {
         self.lcd_stat
     }
+    
+    pub fn set_lcd_stat(&mut self, lcd_stat: u8)  {
+        self.lcd_stat = lcd_stat;
+    }
 
     pub fn get_bg_y(&self) -> u8 {
         self.scroll_y
