@@ -1,3 +1,5 @@
+use crate::cpu::register::Register;
+use crate::cpu::register16::Register16;
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::registers::Registers;
@@ -32,7 +34,8 @@ macro_rules! add_hl_rr {
 
                 fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
                     if self.counter == 1 {
-                        alu.add(&mut registers.hl, &registers.$register);
+                        let temp_register = Register16::new(registers.$register.get_value());
+                        alu.add(&mut registers.hl, &temp_register);
                     }
                     else if self.counter == 0 {
                         return true;
@@ -88,6 +91,7 @@ macro_rules! add_hl_rr {
 
 add_hl_rr!(0x09, bc, Bc);
 add_hl_rr!(0x19, de, De);
+add_hl_rr!(0x29, hl, Hl);
 add_hl_rr!(0x39, sp, Sp);
 
 
@@ -95,6 +99,7 @@ add_hl_rr!(0x39, sp, Sp);
     ($opcode:expr) => {
         return_if_is_instruction!(AddHlBc, $opcode);   //0x09
         return_if_is_instruction!(AddHlDe, $opcode);   //0x19
+        return_if_is_instruction!(AddHlHl, $opcode);   //0x29
         return_if_is_instruction!(AddHlSp, $opcode);   //0x39
     }
 }
