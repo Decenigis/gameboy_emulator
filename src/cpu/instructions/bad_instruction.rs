@@ -34,7 +34,7 @@ impl Instruction for BadInstruction {
         //
         //file.write_all(memory.as_slice()).unwrap();
 
-        false
+        true
     }
 }
 
