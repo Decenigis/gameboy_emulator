@@ -119,6 +119,8 @@ impl App {
             video_processor
         );
 
+        let joypad = memory_controller.lock().get_io_map().lock().get_joypad_io();
+
         let mut _frame: u64 = 0;
 
         while !self.gl_handler.borrow().wind_should_close() {
@@ -126,7 +128,7 @@ impl App {
 
             for event in self.gl_handler.borrow_mut().handle_events() {
                 match event {
-                    WindowEvent::Key(Key::D, _, Action::Press, _) => {
+                    WindowEvent::Key(Key::F12, _, Action::Press, _) => {
                         let mut file = File::create("memdump.bin").unwrap();
                         let mut memory: Vec<u8> = vec![];
 
@@ -135,6 +137,63 @@ impl App {
                         }
 
                         file.write_all(memory.as_slice()).unwrap(); },
+
+                    WindowEvent::Key(Key::W, _, action, _) => {
+                        if action == Action::Press || action == Action::Repeat {
+                            joypad.lock().set_up(true);
+                        } else {
+                            joypad.lock().set_up(false);
+                        }
+                    }
+                    WindowEvent::Key(Key::A, _, action, _) => {
+                        if action == Action::Press || action == Action::Repeat {
+                            joypad.lock().set_left(true);
+                        } else {
+                            joypad.lock().set_left(false);
+                        }
+                    }
+                    WindowEvent::Key(Key::S, _, action, _) => {
+                        if action == Action::Press || action == Action::Repeat {
+                            joypad.lock().set_down(true);
+                        } else {
+                            joypad.lock().set_down(false);
+                        }
+                    }
+                    WindowEvent::Key(Key::D, _, action, _) => {
+                        if action == Action::Press || action == Action::Repeat {
+                            joypad.lock().set_right(true);
+                        } else {
+                            joypad.lock().set_right(false);
+                        }
+                    }
+                    WindowEvent::Key(Key::Space, _, action, _) => {
+                        if action == Action::Press || action == Action::Repeat {
+                            joypad.lock().set_a(true);
+                        } else {
+                            joypad.lock().set_a(false);
+                        }
+                    }
+                    WindowEvent::Key(Key::Enter, _, action, _) => {
+                        if action == Action::Press || action == Action::Repeat {
+                            joypad.lock().set_b(true);
+                        } else {
+                            joypad.lock().set_b(false);
+                        }
+                    }
+                    WindowEvent::Key(Key::Q, _, action, _) => {
+                        if action == Action::Press || action == Action::Repeat {
+                            joypad.lock().set_start(true);
+                        } else {
+                            joypad.lock().set_start(false);
+                        }
+                    }
+                    WindowEvent::Key(Key::E, _, action, _) => {
+                        if action == Action::Press || action == Action::Repeat {
+                            joypad.lock().set_select(true);
+                        } else {
+                            joypad.lock().set_select(false);
+                        }
+                    }
                     _ => {}
                 }
             }
