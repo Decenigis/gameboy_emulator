@@ -11,6 +11,7 @@ mod nop; //0x00
 
 mod ld_r_n;
 mod ld_r_r;
+mod ld_r_hl;
 mod ret_with_condition;
 mod inc_r;
 mod inc_rr;
@@ -70,6 +71,7 @@ use bad_instruction::BadInstruction;
 pub use nop::Nop;       //0x00
 use ld_r_n::*;
 use ld_r_r::*;
+use ld_r_hl::*;
 use ret_with_condition::*;
 use inc_r::*;
 use inc_rr::*;

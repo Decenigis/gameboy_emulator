@@ -40,7 +40,6 @@ macro_rules! sub_a_r {
             mod [<sub_a_ $register>] {
                 use super::*;
                 use crate::cpu::register::Register;
-                use crate::memory::MemoryTrait;
 
                 reusable_testing_macro!($opcode, [<SubA $register_upper>]);
 

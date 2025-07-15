@@ -42,7 +42,6 @@ macro_rules! cp_a_r {
             mod [<cp_a_ $register>] {
                 use super::*;
                 use crate::cpu::register::Register;
-                use crate::memory::MemoryTrait;
 
                 reusable_testing_macro!($opcode, [<CpA $register_upper>]);
 
