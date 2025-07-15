@@ -16,6 +16,7 @@ mod ret_with_condition;
 mod inc_r;
 mod inc_rr;
 mod dec_r;
+mod dec_rr;
 mod push_rr;
 mod pop_rr;
 mod or_a_r;
@@ -31,7 +32,6 @@ mod call_cc_nn;
 mod jr_cc_n;
 mod jp_cc_nn;
 
-mod dec_bc; //0x0B
 mod jr_n; //0x18
 mod ld_hl_nn; //0x21
 mod ldi_hl_a; //0x22
@@ -76,6 +76,7 @@ use ret_with_condition::*;
 use inc_r::*;
 use inc_rr::*;
 use dec_r::*;
+use dec_rr::*;
 use push_rr::*;
 use pop_rr::*;
 use or_a_r::*;
@@ -91,7 +92,6 @@ use call_cc_nn::*;
 use jr_cc_n::*;
 use jp_cc_nn::*;
 
-use dec_bc::DecBc;      //0x0B
 use jr_n::JrN;          //0x18
 use ldi_hl_a::LdiHlA;   //0x22
 use inc_hl::IncHl;      //0x23

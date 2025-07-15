@@ -2,7 +2,7 @@ use crate::cpu::alu::ALU;
 use crate::cpu::instructions::*;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
-use crate::{adc_a_r_decode_instruction, add_a_r_decode_instruction, add_hl_rr_decode_instruction, call_cc_nn_decode_instruction, cp_a_r_decode_instruction, dec_r_decode_instruction, inc_r_decode_instruction, inc_rr_decode_instruction, jp_cc_nn_decode_instruction, jr_cc_n_decode_instruction, ld_a_rr_decode_instruction, ld_r_hl_decode_instruction, ld_r_n_decode_instruction, ld_r_r_decode_instruction, ld_rr_a_decode_instruction, ld_rr_nn_decode_instruction, or_a_r_decode_instruction, pop_rr_decode_instruction, push_rr_decode_instruction, ret_with_condition_decode_instruction, sub_a_r_decode_instruction};
+use crate::{adc_a_r_decode_instruction, add_a_r_decode_instruction, add_hl_rr_decode_instruction, call_cc_nn_decode_instruction, cp_a_r_decode_instruction, dec_r_decode_instruction, dec_rr_decode_instruction, inc_r_decode_instruction, inc_rr_decode_instruction, jp_cc_nn_decode_instruction, jr_cc_n_decode_instruction, ld_a_rr_decode_instruction, ld_r_hl_decode_instruction, ld_r_n_decode_instruction, ld_r_r_decode_instruction, ld_rr_a_decode_instruction, ld_rr_nn_decode_instruction, or_a_r_decode_instruction, pop_rr_decode_instruction, push_rr_decode_instruction, ret_with_condition_decode_instruction, sub_a_r_decode_instruction};
 use parking_lot::Mutex;
 use std::sync::Arc;
 
@@ -68,6 +68,7 @@ pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     inc_r_decode_instruction!(opcode);
     inc_rr_decode_instruction!(opcode);
     dec_r_decode_instruction!(opcode);
+    dec_rr_decode_instruction!(opcode);
     push_rr_decode_instruction!(opcode);
     pop_rr_decode_instruction!(opcode);
     or_a_r_decode_instruction!(opcode);
@@ -84,7 +85,6 @@ pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     jp_cc_nn_decode_instruction!(opcode);
 
     return_if_is_instruction!(LdBcNn, opcode);  //0x01
-    return_if_is_instruction!(DecBc, opcode);   //0x0B
     return_if_is_instruction!(JrN, opcode);     //0x18
     return_if_is_instruction!(LdiHlA, opcode);  //0x22
     return_if_is_instruction!(IncHl, opcode);   //0x23
