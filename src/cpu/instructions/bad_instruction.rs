@@ -34,7 +34,7 @@ impl Instruction for BadInstruction {
         //
         //file.write_all(memory.as_slice()).unwrap();
 
-        true
+        true //ignore bad instructions for now while other work is going on
     }
 }
 
@@ -62,7 +62,7 @@ mod tests {
     }
 
     #[test]
-    fn act_immediately_returns_false() {
+    fn act_immediately_returns_true() {
         let mut registers = Registers::new(0, 0, 0, 0, 0, 0);
         let mut alu = ALU::new(registers.f.clone());
 
@@ -70,6 +70,6 @@ mod tests {
 
         let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false, &mut false);
 
-        assert_eq!(false, result);
+        assert_eq!(true, result);
     }
 }

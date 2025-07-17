@@ -2,7 +2,7 @@ use std::sync::Arc;
 use dec_gl::renderable::Renderable;
 use mockall_double::double;
 use dec_gl::Vertex2d;
-use dec_gl::shader::ShaderProgram;
+use dec_gl::shader::{ShaderManager, ShaderProgram};
 #[double]
 use dec_gl::texture::{Texture2Du8, Texture3Du8};
 use dec_gl::types::{ivec2, ivec3, IVec2};
@@ -133,7 +133,7 @@ impl VideoProcessor {
         vram.set_not_stale();
     }
 
-    fn bind_textures_to_units(&self, texture_bank: bool, map_bank: bool) {
+    fn bind_tile_textures_to_units(&self, texture_bank: bool) {
         if texture_bank {
             self.tilemap_bank_0.bind_to_unit(1);
         }
@@ -142,8 +142,9 @@ impl VideoProcessor {
         }
 
         self.tilemap_bank_1.bind_to_unit(2);
+    }
 
-
+    fn bind_map_textures_to_units(&self, map_bank: bool) {
         if map_bank {
             self.map_bank_1.bind_to_unit(0);
         }
@@ -153,17 +154,21 @@ impl VideoProcessor {
     }
 
     fn bind_textures_for_background(&self, lcd_ctrl: u8) {
-        self.bind_textures_to_units(
-            LCDCMask::mask(lcd_ctrl, LCDCMask::WIN_AND_BG_MAP),
+        self.bind_tile_textures_to_units(
+            LCDCMask::mask(lcd_ctrl, LCDCMask::WIN_AND_BG_MAP)
+        );
+        self.bind_map_textures_to_units(
             LCDCMask::mask(lcd_ctrl, LCDCMask::BG_TILE_BANK)
-        )
+        );
     }
 
     fn bind_textures_for_window(&self, lcd_ctrl: u8) {
-        self.bind_textures_to_units(
-            LCDCMask::mask(lcd_ctrl, LCDCMask::WIN_AND_BG_MAP),
+        self.bind_tile_textures_to_units(
+            LCDCMask::mask(lcd_ctrl, LCDCMask::WIN_AND_BG_MAP)
+        );
+        self.bind_map_textures_to_units(
             LCDCMask::mask(lcd_ctrl, LCDCMask::WIN_TILE_BANK)
-        )
+        );
     }
 
     fn set_shader_values(&self, shader: &mut Box<dyn ShaderProgram>, scroll: &IVec2, draw_cutoff: &IVec2, bg_pal: &u8){
@@ -209,7 +214,7 @@ impl VideoProcessor {
         Ok(())
     }
 
-    pub fn draw(&mut self, shader: &mut Box<dyn ShaderProgram>) -> Result<(), RendererError> {
+    pub fn draw(&mut self, shader_manager: &mut ShaderManager) -> Result<(), RendererError> {
         let lcd_ctrl = {
             let video_io_mutex = self.video_io.clone();
             let video_io_guard = video_io_mutex.lock();
@@ -217,11 +222,18 @@ impl VideoProcessor {
         };
 
         if LCDCMask::mask(lcd_ctrl, LCDCMask::LCD_ENABLE) {
-            if LCDCMask::mask(lcd_ctrl, LCDCMask::BG_ENABLE) {
-                self.draw_background(shader)?;
-            }
-            if LCDCMask::mask(lcd_ctrl, LCDCMask::WIN_ENABLE) {
-                self.draw_window(shader)?;
+            match shader_manager.bind("BACKGROUND".to_string()) {
+                Ok(background_shader) => {
+                    if LCDCMask::mask(lcd_ctrl, LCDCMask::BG_ENABLE) {
+                        self.draw_background(background_shader)?;
+                    }
+                    if LCDCMask::mask(lcd_ctrl, LCDCMask::WIN_ENABLE) {
+                        self.draw_window(background_shader)?;
+                    }
+                }
+                Err(error) => {
+                    return Err(RendererError::GLError { error });
+                }
             }
         }
 
@@ -237,7 +249,7 @@ mod tests {
     use std::rc::Rc;
     use std::sync::Arc;
     use dec_gl::renderable::{NullableRenderable, Renderable};
-    use dec_gl::shader::{NullableShaderProgram, ShaderProgram};
+    use dec_gl::shader::{NullableShaderProgram, ShaderManager, ShaderProgram};
     use dec_gl::texture::{MockTexture2Du8, MockTexture3Du8};
     use dec_gl::types::ivec2;
     use dec_gl::Vertex2d;
@@ -560,7 +572,7 @@ mod tests {
     }
 
     #[test]
-    fn binds_the_shader_on_draw() {
+    fn binds_the_background_shader_on_draw() {
         let vram = Arc::new(Mutex::new(VRAM::new()));
         let video_io = Arc::new(Mutex::new(VideoIO::new()));
         let was_bound = Rc::new(RefCell::new(false));
@@ -571,9 +583,12 @@ mod tests {
         tile_bank_2.expect_bind_to_unit().returning(|_| ());
         map_bank_0.expect_bind_to_unit().returning(|_| ());
 
-        let mut shader: Box<dyn ShaderProgram> = Box::new(
-            NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), was_bound.clone()),
-        );
+        let mut shader_manager = ShaderManager::new();
+        shader_manager.register_shader("BACKGROUND".to_string(),
+            Box::new(
+                NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), was_bound.clone()),
+            )
+        ).unwrap();
 
         video_io.lock().set(0xFF40, 0x81);
 
@@ -584,7 +599,7 @@ mod tests {
             vram.clone(),
             video_io.clone()).unwrap();
 
-        video_processor.draw(&mut shader).unwrap();
+        video_processor.draw(&mut shader_manager).unwrap();
 
         assert_eq!(true, *was_bound.borrow());
     }
@@ -675,9 +690,12 @@ mod tests {
 
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
-        let mut shader: Box<dyn ShaderProgram> = Box::new(
-            NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
-        );
+        let mut shader_manager = ShaderManager::new();
+        shader_manager.register_shader("BACKGROUND".to_string(),
+                                       Box::new(
+                                           NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
+                                       )
+        ).unwrap();
 
         video_io.lock().set(0xFF40, 0x00);
 
@@ -695,7 +713,7 @@ mod tests {
             Arc::new(Mutex::new(VRAM::new())),
             video_io.clone()).unwrap();
 
-        video_processor.draw(&mut shader).unwrap();
+        video_processor.draw(&mut shader_manager).unwrap();
 
         assert_eq!(0, *draw_count.borrow());
     }
@@ -708,9 +726,12 @@ mod tests {
 
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
-        let mut shader: Box<dyn ShaderProgram> = Box::new(
-            NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
-        );
+        let mut shader_manager = ShaderManager::new();
+        shader_manager.register_shader("BACKGROUND".to_string(),
+                                       Box::new(
+                                           NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
+                                       )
+        ).unwrap();
 
         video_io.lock().set(0xFF40, LCDCMask::LCD_ENABLE | LCDCMask::BG_ENABLE);
 
@@ -728,7 +749,7 @@ mod tests {
             Arc::new(Mutex::new(VRAM::new())),
             video_io.clone()).unwrap();
 
-        video_processor.draw(&mut shader).unwrap();
+        video_processor.draw(&mut shader_manager).unwrap();
 
         assert_eq!(1, *draw_count.borrow());
     }
@@ -741,9 +762,12 @@ mod tests {
 
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
-        let mut shader: Box<dyn ShaderProgram> = Box::new(
-            NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
-        );
+        let mut shader_manager = ShaderManager::new();
+        shader_manager.register_shader("BACKGROUND".to_string(),
+                                       Box::new(
+                                           NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
+                                       )
+        ).unwrap();
 
         video_io.lock().set(0xFF40, LCDCMask::LCD_ENABLE | LCDCMask::WIN_ENABLE);
 
@@ -761,7 +785,7 @@ mod tests {
             Arc::new(Mutex::new(VRAM::new())),
             video_io.clone()).unwrap();
 
-        video_processor.draw(&mut shader).unwrap();
+        video_processor.draw(&mut shader_manager).unwrap();
 
         assert_eq!(1, *draw_count.borrow());
     }
@@ -774,9 +798,12 @@ mod tests {
 
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
-        let mut shader: Box<dyn ShaderProgram> = Box::new(
-            NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
-        );
+        let mut shader_manager = ShaderManager::new();
+        shader_manager.register_shader("BACKGROUND".to_string(),
+                                       Box::new(
+                                           NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
+                                       )
+        ).unwrap();
 
         video_io.lock().set(0xFF40, LCDCMask::LCD_ENABLE | LCDCMask::WIN_ENABLE | LCDCMask::BG_ENABLE);
 
@@ -794,7 +821,7 @@ mod tests {
             Arc::new(Mutex::new(VRAM::new())),
             video_io.clone()).unwrap();
 
-        video_processor.draw(&mut shader).unwrap();
+        video_processor.draw(&mut shader_manager).unwrap();
 
         assert_eq!(2, *draw_count.borrow());
     }

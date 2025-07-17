@@ -1,10 +1,11 @@
 use std::sync::Arc;
-use dec_gl::shader::ShaderProgram;
+use dec_gl::shader::ShaderManager;
 use parking_lot::Mutex;
 use crate::cpu::CPU;
 use crate::memory::MemoryController;
 use crate::renderer::VideoProcessor;
 use crate::system::event_handler::EventHandler;
+use crate::system::system_error::SystemError;
 use crate::system::vdu_counter::VDUCounter;
 
 pub struct MainBoard {
@@ -27,7 +28,7 @@ impl MainBoard {
         }
     }
 
-    pub fn perform_frame(&mut self, bacgkround_shader: &mut Box<dyn ShaderProgram>) {
+    pub fn perform_frame(&mut self, shader_manager: &mut ShaderManager) -> Result<(), SystemError> {
         let mut send_frame = false;
 
         while !send_frame {
@@ -38,9 +39,11 @@ impl MainBoard {
                     &mut self.cpu,
                     self.memory.clone(),
                     &mut self.video_processor,
-                    bacgkround_shader,
-                    &event);
+                    shader_manager,
+                    &event)?;
             }
         }
+
+        Ok(())
     }
 }

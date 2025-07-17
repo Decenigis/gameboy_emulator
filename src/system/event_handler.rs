@@ -1,10 +1,11 @@
 use std::sync::Arc;
-use dec_gl::shader::ShaderProgram;
+use dec_gl::shader::{ShaderManager, ShaderProgram};
 use parking_lot::Mutex;
 use crate::cpu::{Interrupt, CPU};
 use crate::memory::MemoryController;
 use crate::renderer::VideoProcessor;
 use crate::system::clock_event::ClockEvent;
+use crate::system::system_error::SystemError;
 
 pub struct EventHandler {}
 
@@ -18,9 +19,9 @@ impl EventHandler {
                     cpu: &mut Box<dyn CPU>,
                     memory: Arc<Mutex<MemoryController>>,
                     video_processor: &mut VideoProcessor,
-                    bacgkround_shader: &mut Box<dyn ShaderProgram>,
+                    shader_manager: &mut ShaderManager,
                     event: &ClockEvent)
-    -> bool
+    -> Result<bool, SystemError>
     {
         match event {
             ClockEvent::CPUClock => {
@@ -29,19 +30,19 @@ impl EventHandler {
             ClockEvent::DrawLine => {
                 video_processor.try_update_graphics_data();
 
-                match video_processor.draw(bacgkround_shader) {
+                match video_processor.draw(shader_manager) {
                     Ok(_) => {}
-                    Err(e) => println!("{}", e),
+                    Err(error) => return Err(SystemError::RendererError { error }),
                 }
             }
             ClockEvent::SendFrame => {
-                return true
+                return Ok(true)
             }
             ClockEvent::VBlankInterrupt => {
                 cpu.try_interrupt(memory.clone(), Interrupt::VBlank);
             }
         }
-        false
+        Ok(false)
     }
 }
 
@@ -110,11 +111,11 @@ mod tests { //these are not very nice
             vram,
             video_io).unwrap();
 
-        let mut bacgkround_shader: Box<dyn ShaderProgram> = Box::new(NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false))));
+        let mut shader_manager = ShaderManager::new();
 
         let event = ClockEvent::CPUClock;
 
-        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut bacgkround_shader, &event);
+        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event);
 
         assert_eq!(1, *number_of_times_clocked.borrow());
     }
@@ -148,11 +149,12 @@ mod tests { //these are not very nice
             vram,
             video_io).unwrap();
 
-        let mut bacgkround_shader: Box<dyn ShaderProgram> = Box::new(NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false))));
+        let mut shader_manager = ShaderManager::new();
+        shader_manager.register_shader("BACKGROUND".to_string(), Box::new(NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false))))).unwrap();
 
         let event = ClockEvent::DrawLine;
 
-        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut bacgkround_shader, &event);
+        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event).unwrap();
 
         assert_eq!(1, draw_count.borrow().clone());
     }
@@ -175,11 +177,11 @@ mod tests { //these are not very nice
             vram,
             video_io).unwrap();
 
-        let mut bacgkround_shader: Box<dyn ShaderProgram> = Box::new(NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false))));
+        let mut shader_manager = ShaderManager::new();
 
         let event = ClockEvent::SendFrame;
 
-        let send_frame = event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut bacgkround_shader, &event);
+        let send_frame = event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event).unwrap();
 
         assert_eq!(true, send_frame);
     }
@@ -203,11 +205,11 @@ mod tests { //these are not very nice
             vram,
             video_io).unwrap();
 
-        let mut bacgkround_shader: Box<dyn ShaderProgram> = Box::new(NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false))));
+        let mut shader_manager = ShaderManager::new();
 
         let event = ClockEvent::VBlankInterrupt;
 
-        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut bacgkround_shader, &event);
+        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event).unwrap();
 
         assert_eq!(Some(Interrupt::VBlank), *interrupt.borrow());
     }

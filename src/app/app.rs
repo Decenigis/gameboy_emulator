@@ -42,8 +42,8 @@ impl App {
          let mut shader_manager = ShaderManager::new();
 
          shader_manager.register_shader(
-             "UI".to_string(),
-             Box::new(GLShaderProgram::load_shader_program("assets/graphics/shaders/ui", "UI", false).unwrap())
+             "BACKGROUND".to_string(),
+             Box::new(GLShaderProgram::load_shader_program("assets/graphics/shaders/background", "BACKGROUND", false).unwrap())
          ).unwrap();
 
          let framebuffer = SimpleFramebuffer::new(window_size.x as i32, window_size.y as i32).unwrap();
@@ -67,7 +67,7 @@ impl App {
     pub fn run (&mut self) {
         self.framebuffer.set_clear_colour(vec4(GB_COLUR_0.x, GB_COLUR_0.y, GB_COLUR_0.z, 1.0));
 
-        match self.shader_manager.bind("UI".to_string()) {
+        match self.shader_manager.bind("BACKGROUND".to_string()) {
             Ok(shader) => {
                 shader.set_uniform("pv".to_string(), &self.camera.get_matrix());
 
@@ -203,12 +203,7 @@ impl App {
             self.framebuffer.bind_draw_target();
 
 
-            match self.shader_manager.bind("UI".to_string()) {
-                Ok(shader) => {
-                    main_board.perform_frame(shader)
-                }
-                Err(_) => return
-            };
+            main_board.perform_frame(&mut self.shader_manager).unwrap();
 
             SimpleFramebuffer::bind_default_framebuffer();
             self.framebuffer.blit(
