@@ -32,6 +32,7 @@ mod call_cc_nn;
 mod jr_cc_n;
 mod jp_cc_nn;
 
+mod rrca; //0x0F
 mod jr_n; //0x18
 mod ld_hl_nn; //0x21
 mod ldi_hl_a; //0x22
@@ -92,6 +93,7 @@ use call_cc_nn::*;
 use jr_cc_n::*;
 use jp_cc_nn::*;
 
+use rrca::RrcA;         //0x0F
 use jr_n::JrN;          //0x18
 use ldi_hl_a::LdiHlA;   //0x22
 use inc_hl::IncHl;      //0x23

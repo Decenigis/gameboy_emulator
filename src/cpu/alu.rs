@@ -210,6 +210,19 @@ impl ALU {
             self.sub_internal(a, &T::one());
         }
     }
+
+    pub fn rrca(&self, a: &mut Register8) {
+        let mut flags = self.flags.borrow_mut();
+        flags.set_bit(Self::SUB_FLAG, false);
+        flags.set_bit(Self::HALF_CARRY_FLAG, false);
+        let value = a.get_value();
+
+        flags.set_bit(Self::CARRY_FLAG, value & 0x01 != 0);
+
+        a.set_value((value >> 1) | ((value & 0x01) << 7));
+
+        flags.set_bit(Self::ZERO_FLAG, a.is_zero());
+    }
 }
 
 
@@ -1137,4 +1150,42 @@ mod tests {
         assert_eq!(flags.borrow().get_bit(ALU::CARRY_FLAG), true);
     }
 
+    #[test]
+    fn rrca_rolls_correctly() {
+        let mut a = Register8::new(0b00010001);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.rrca(&mut a);
+
+        assert_eq!(a.get_value(), 0b10001000);
+    }
+
+    #[test]
+    fn rrca_sets_flags_correctly_for_zero_no_carry() {
+        let mut a = Register8::new(0b00000000);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.rrca(&mut a);
+
+        assert_eq!(true, flags.borrow().get_bit(ALU::ZERO_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::SUB_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::CARRY_FLAG));
+    }
+
+    #[test]
+    fn rrca_sets_flags_correctly_for_nonzero_carry() {
+        let mut a = Register8::new(0b00010001);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.rrca(&mut a);
+
+        assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::SUB_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::CARRY_FLAG));
+    }
 }
