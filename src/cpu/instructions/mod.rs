@@ -51,6 +51,7 @@ mod jp_nn; //0xC3
 mod ret; //0xC9
 mod add_a_n; //0xC6
 mod bitwise; //0xCB
+mod adc_a_n; //0xCE
 mod call_nn; //0xCD
 mod sub_a_n; //0xD6
 mod reti; //0xD9
@@ -113,6 +114,7 @@ use xor_a::XorA;        //0xAF
 use jp_nn::JpNn;        //0xC3
 use add_a_n::AddAN;     //0xC6
 use ret::Ret;           //0xC9
+use adc_a_n::AdcAN;     //0xCE
 use bitwise::Bitwise;   //0xCB
 use call_nn::CallNn;    //0xCD
 use sub_a_n::SubAN;     //0xD6
