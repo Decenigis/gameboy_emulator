@@ -86,6 +86,7 @@ pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     jp_cc_nn_decode_instruction!(opcode);
 
     return_if_is_instruction!(RrcA, opcode);    //0x0F
+    return_if_is_instruction!(RlA, opcode);     //0x17
     return_if_is_instruction!(JrN, opcode);     //0x18
     return_if_is_instruction!(LdiHlA, opcode);  //0x22
     return_if_is_instruction!(IncHl, opcode);   //0x23
