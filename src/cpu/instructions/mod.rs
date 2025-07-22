@@ -59,6 +59,7 @@ mod sbc_a_n; //0xDE
 mod ldh_n_a; //0xE0
 mod ldh_c_a; //0xE2
 mod and_a_n; //0xE6
+mod jp_hl; //0xE9
 mod ld_nn_a; //0xEA
 mod ldh_a_n; //0xF0
 mod di; //0xF3
@@ -123,6 +124,7 @@ use sbc_a_n::SbcAN;     //0xDE
 use ldh_n_a::LdhNA;     //0xE0
 use ldh_c_a::LdhCA;     //0xE2
 use and_a_n::AndAN;     //0xE6
+use jp_hl::JpHl;        //0xE9
 use ld_nn_a::LdNNA;     //0xEA
 use ldh_a_n::LdhAN;     //0xF0
 use di::Di;             //0xF3
