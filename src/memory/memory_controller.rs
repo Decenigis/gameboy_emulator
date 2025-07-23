@@ -11,6 +11,10 @@ use crate::memory::sram::SRAM;
 use crate::memory::vram::VRAM;
 
 pub struct MemoryController {
+    oam_dma_position: u16,
+    oam_dma_address: u16,
+    performing_dma: bool,
+
     rom: ROM,
     vram:  Arc<Mutex<VRAM>>,
     sram: SRAM,
@@ -22,6 +26,10 @@ pub struct MemoryController {
 
 impl MemoryTrait for MemoryController {
     fn get(&self, position: u16) -> u8 {
+        if !self.performing_dma && position < 0xFF00 && self.oam_dma_position < 160 {
+            return 0xFF;
+        }
+
         if self.rom.has_address(position) {
             self.rom.get(position)
         }
@@ -30,6 +38,9 @@ impl MemoryTrait for MemoryController {
         }
         else if self.ram.has_address(position) {
             self.ram.get(position)
+        }
+        else if self.oam.has_address(position) {
+            self.oam.get(position)
         }
         else if self.io_map.lock().has_address(position) {
             self.io_map.lock().get(position)
@@ -43,6 +54,14 @@ impl MemoryTrait for MemoryController {
     }
 
     fn set(&mut self, position: u16, value: u8) -> u8 {
+        if !self.performing_dma && position < 0xFF00 && self.oam_dma_position < 160 {
+            return 0xFF;
+        }
+        if position == 0xFF46 {
+            self.oam_dma_position = 0;
+            self.oam_dma_address = (value as u16) << 8;
+        }
+
         if self.rom.has_address(position) {
             self.rom.set(position, value)
         }
@@ -51,6 +70,9 @@ impl MemoryTrait for MemoryController {
         }
         else if self.ram.has_address(position) {
             self.ram.set(position, value)
+        }
+        else if self.oam.has_address(position) {
+            self.oam.set(position, value)
         }
         else if self.io_map.lock().has_address(position) {
             self.io_map.lock().set(position, value)
@@ -71,6 +93,10 @@ impl MemoryTrait for MemoryController {
 impl MemoryController {
     pub fn new () -> Self {
         Self {
+            oam_dma_address: 0,
+            oam_dma_position: 160,
+            performing_dma: false,
+
             rom: ROM::new(),
             vram: Arc::new(Mutex::new(VRAM::new())),
             sram: SRAM::new(),
@@ -78,6 +104,21 @@ impl MemoryController {
             oam: OAM::new(),
             io_map: Arc::new(Mutex::new(IOMap::new())),
             hram: HRAM::new()
+        }
+    }
+
+    pub fn clock(&mut self) {
+        if self.oam_dma_position < 160 {
+            self.performing_dma = true;
+
+            for _ in 0..4 { //because the emulator only emulates every 4 clock cycles
+                let value = self.get(self.oam_dma_address | self.oam_dma_position);
+                self.set(0xFE00 + self.oam_dma_position, value);
+
+                self.oam_dma_position += 1;
+            }
+
+            self.performing_dma = false;
         }
     }
 
@@ -143,6 +184,27 @@ mod tests {
     }
 
 
+
+    #[test]
+    fn writes_to_oam() {
+        let expected_value = 0x12;
+        let mut memory_controller = MemoryController::new();
+
+        memory_controller.set(0xFE00, expected_value);
+
+        assert_eq!(memory_controller.oam.get(0xFE00), expected_value);
+    }
+
+    #[test]
+    fn reads_from_oam() {
+        let expected_value = 0x12;
+        let mut memory_controller = MemoryController::new();
+
+        memory_controller.oam.set(0xFE00, expected_value);
+
+        assert_eq!(memory_controller.get(0xFE00), expected_value);
+    }
+
     #[test]
     fn writes_to_io_map() {
         let expected_value = 0x12;
@@ -183,4 +245,32 @@ mod tests {
         assert_eq!(memory_controller.get(0xFF80), expected_value);
     }
 
+    #[test]
+    fn copies_oam_during_dma() {
+        let mut memory_controller = MemoryController::new();
+
+        for i in 0..0xA0 {
+            memory_controller.set(0xD000 | i, i as u8);
+        }
+
+        memory_controller.set(0xFF46, 0xD0);
+
+        for i in 0..40 {
+            memory_controller.clock();
+        }
+
+        for i in 0..0xA0 {
+            assert_eq!(memory_controller.get(0xFE00 + i), i as u8);
+        }
+    }
+
+    #[test]
+    fn locks_memory_during_dma() {
+        let mut memory_controller = MemoryController::new();
+
+        memory_controller.set(0xFF46, 0xD0);
+
+        assert_eq!(0xFF, memory_controller.get(0xD000));
+        assert_eq!(0xFF, memory_controller.get(0xFE00));
+    }
 }

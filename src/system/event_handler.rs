@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use dec_gl::shader::{ShaderManager, ShaderProgram};
+use dec_gl::shader::ShaderManager;
 use parking_lot::Mutex;
 use crate::cpu::{Interrupt, CPU};
 use crate::memory::MemoryController;
@@ -25,6 +25,8 @@ impl EventHandler {
     {
         match event {
             ClockEvent::CPUClock => {
+                memory.lock().clock();
+                
                 cpu.clock(memory.clone());
             }
             ClockEvent::DrawLine => {

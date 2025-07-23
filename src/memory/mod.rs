@@ -7,6 +7,7 @@ mod ram;
 mod oam;
 mod hram;
 pub mod io_map;
+mod object;
 
 pub use memory_controller::MemoryController;
 pub use memory_trait::MemoryTrait;
