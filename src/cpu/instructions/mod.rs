@@ -12,6 +12,7 @@ mod nop; //0x00
 mod ld_r_n;
 mod ld_r_r;
 mod ld_r_hl;
+mod ld_hl_r;
 mod ret_with_condition;
 mod inc_r;
 mod inc_rr;
@@ -78,6 +79,7 @@ pub use nop::Nop;       //0x00
 use ld_r_n::*;
 use ld_r_r::*;
 use ld_r_hl::*;
+use ld_hl_r::*;
 use ret_with_condition::*;
 use inc_r::*;
 use inc_rr::*;
