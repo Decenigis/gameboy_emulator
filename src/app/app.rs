@@ -71,9 +71,9 @@ impl App {
             Ok(shader) => {
                 shader.set_uniform("pv".to_string(), &self.camera.get_matrix());
 
-                shader.set_uniform("bgMap".to_string(), &0);
-                shader.set_uniform("tileMapBank0".to_string(), &1);
-                shader.set_uniform("tileMapBank1".to_string(), &2);
+                shader.set_uniform("tileMapBank0".to_string(), &0);
+                shader.set_uniform("tileMapBank1".to_string(), &1);
+                shader.set_uniform("bgMap".to_string(), &2);
 
                 shader.set_uniform("gbColour0".to_string(), &GB_COLUR_0);
                 shader.set_uniform("gbColour1".to_string(), &GB_COLUR_1);

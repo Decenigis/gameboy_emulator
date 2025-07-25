@@ -5,9 +5,9 @@ layout (location = 0) out vec4 frag_colour;
 in vec2 texCoords;
 in vec2 actualCoords;
 
-uniform usampler2D bgMap;
 uniform usampler3D tileMapBank0;
 uniform usampler3D tileMapBank1;
+uniform usampler2D bgMap;
 
 uniform ivec2 scroll;
 uniform ivec2 draw_cutoff;

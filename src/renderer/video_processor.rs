@@ -135,21 +135,21 @@ impl VideoProcessor {
 
     fn bind_tile_textures_to_units(&self, texture_bank: bool) {
         if texture_bank {
-            self.tilemap_bank_0.bind_to_unit(1);
+            self.tilemap_bank_0.bind_to_unit(0);
         }
         else {
-            self.tilemap_bank_2.bind_to_unit(1);
+            self.tilemap_bank_2.bind_to_unit(0);
         }
 
-        self.tilemap_bank_1.bind_to_unit(2);
+        self.tilemap_bank_1.bind_to_unit(1);
     }
 
     fn bind_map_textures_to_units(&self, map_bank: bool) {
         if map_bank {
-            self.map_bank_1.bind_to_unit(0);
+            self.map_bank_1.bind_to_unit(2);
         }
         else {
-            self.map_bank_0.bind_to_unit(0);
+            self.map_bank_0.bind_to_unit(2);
         }
     }
 
@@ -439,7 +439,7 @@ mod tests {
         map_bank_0.expect_bind_to_unit().returning(|_| ());
 
         tile_bank_0.expect_bind_to_unit().times(0).returning(|_| ());
-        tile_bank_2.expect_bind_to_unit().with(eq(1)).times(2).returning(|_| ());
+        tile_bank_2.expect_bind_to_unit().with(eq(0)).times(2).returning(|_| ());
 
         let video_processor = VideoProcessor::new(
             tile_bank_0, tile_bank_1, tile_bank_2,
@@ -458,7 +458,7 @@ mod tests {
         tile_bank_1.expect_bind_to_unit().returning(|_| ());
         map_bank_0.expect_bind_to_unit().returning(|_| ());
 
-        tile_bank_0.expect_bind_to_unit().with(eq(1)).times(2).returning(|_| ());
+        tile_bank_0.expect_bind_to_unit().with(eq(0)).times(2).returning(|_| ());
         tile_bank_2.expect_bind_to_unit().times(0).returning(|_| ());
 
         let video_processor = VideoProcessor::new(
@@ -479,7 +479,7 @@ mod tests {
         tile_bank_2.expect_bind_to_unit().returning(|_| ());
         map_bank_0.expect_bind_to_unit().returning(|_| ());
 
-        tile_bank_1.expect_bind_to_unit().with(eq(2)).times(4).returning(|_| ());
+        tile_bank_1.expect_bind_to_unit().with(eq(1)).times(4).returning(|_| ());
 
         let video_processor = VideoProcessor::new(
             tile_bank_0, tile_bank_1, tile_bank_2,
@@ -501,7 +501,7 @@ mod tests {
         tile_bank_1.expect_bind_to_unit().returning(|_| ());
         tile_bank_2.expect_bind_to_unit().returning(|_| ());
 
-        map_bank_0.expect_bind_to_unit().with(eq(0)).times(1).returning(|_| ());
+        map_bank_0.expect_bind_to_unit().with(eq(2)).times(1).returning(|_| ());
         map_bank_1.expect_bind_to_unit().times(0).returning(|_| ());
 
         let video_processor = VideoProcessor::new(
@@ -521,7 +521,7 @@ mod tests {
         tile_bank_2.expect_bind_to_unit().returning(|_| ());
 
         map_bank_0.expect_bind_to_unit().times(0).returning(|_| ());
-        map_bank_1.expect_bind_to_unit().with(eq(0)).times(1).returning(|_| ());
+        map_bank_1.expect_bind_to_unit().with(eq(2)).times(1).returning(|_| ());
 
         let video_processor = VideoProcessor::new(
             tile_bank_0, tile_bank_1, tile_bank_2,
@@ -539,7 +539,7 @@ mod tests {
         tile_bank_1.expect_bind_to_unit().returning(|_| ());
         tile_bank_2.expect_bind_to_unit().returning(|_| ());
 
-        map_bank_0.expect_bind_to_unit().with(eq(0)).times(1).returning(|_| ());
+        map_bank_0.expect_bind_to_unit().with(eq(2)).times(1).returning(|_| ());
         map_bank_1.expect_bind_to_unit().times(0).returning(|_| ());
 
         let video_processor = VideoProcessor::new(
@@ -559,7 +559,7 @@ mod tests {
         tile_bank_2.expect_bind_to_unit().returning(|_| ());
 
         map_bank_0.expect_bind_to_unit().times(0).returning(|_| ());
-        map_bank_1.expect_bind_to_unit().with(eq(0)).times(1).returning(|_| ());
+        map_bank_1.expect_bind_to_unit().with(eq(2)).times(1).returning(|_| ());
 
         let video_processor = VideoProcessor::new(
             tile_bank_0, tile_bank_1, tile_bank_2,
