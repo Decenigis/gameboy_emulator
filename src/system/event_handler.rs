@@ -26,7 +26,7 @@ impl EventHandler {
         match event {
             ClockEvent::CPUClock => {
                 memory.lock().clock();
-                
+
                 cpu.clock(memory.clone());
             }
             ClockEvent::DrawLine => {
@@ -104,13 +104,16 @@ mod tests { //these are not very nice
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
         let vram = memory.lock().get_vram_arc();
+        let oam = memory.lock().get_oam_arc();
         let video_io = memory.lock().get_io_map().lock().get_video_io();
 
         let mut video_processor = VideoProcessor::new(
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             vram,
+            oam,
             video_io).unwrap();
 
         let mut shader_manager = ShaderManager::new();
@@ -131,6 +134,7 @@ mod tests { //these are not very nice
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
         let vram = memory.lock().get_vram_arc();
+        let oam = memory.lock().get_oam_arc();
         let video_io = memory.lock().get_io_map().lock().get_video_io();
 
         video_io.lock().set(0xFF40, 0x81);
@@ -148,7 +152,9 @@ mod tests { //these are not very nice
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             renderable,
+            get_generic_renderable(),
             vram,
+            oam,
             video_io).unwrap();
 
         let mut shader_manager = ShaderManager::new();
@@ -170,13 +176,16 @@ mod tests { //these are not very nice
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
         let vram = memory.lock().get_vram_arc();
+        let oam = memory.lock().get_oam_arc();
         let video_io = memory.lock().get_io_map().lock().get_video_io();
 
         let mut video_processor = VideoProcessor::new(
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             vram,
+            oam,
             video_io).unwrap();
 
         let mut shader_manager = ShaderManager::new();
@@ -198,13 +207,16 @@ mod tests { //these are not very nice
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
         let vram = memory.lock().get_vram_arc();
+        let oam = memory.lock().get_oam_arc();
         let video_io = memory.lock().get_io_map().lock().get_video_io();
 
         let mut video_processor = VideoProcessor::new(
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             vram,
+            oam,
             video_io).unwrap();
 
         let mut shader_manager = ShaderManager::new();

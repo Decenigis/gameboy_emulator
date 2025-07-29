@@ -121,11 +121,11 @@ impl VideoIO {
         self.bg_pal
     }
 
-    pub fn _get_obj_pal_0(&self) -> u8 {
+    pub fn get_obj_pal_0(&self) -> u8 {
         self.obj_pal_0
     }
 
-    pub fn _get_obj_pal_1(&self) -> u8 {
+    pub fn get_obj_pal_1(&self) -> u8 {
         self.obj_pal_1
     }
 

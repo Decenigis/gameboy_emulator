@@ -19,7 +19,7 @@ pub struct MemoryController {
     vram:  Arc<Mutex<VRAM>>,
     sram: SRAM,
     ram: RAM,
-    oam: OAM,
+    oam: Arc<Mutex<OAM>>,
     io_map: Arc<Mutex<IOMap>>,
     hram: HRAM,
 }
@@ -39,8 +39,8 @@ impl MemoryTrait for MemoryController {
         else if self.ram.has_address(position) {
             self.ram.get(position)
         }
-        else if self.oam.has_address(position) {
-            self.oam.get(position)
+        else if self.oam.lock().has_address(position) {
+            self.oam.lock().get(position)
         }
         else if self.io_map.lock().has_address(position) {
             self.io_map.lock().get(position)
@@ -71,8 +71,8 @@ impl MemoryTrait for MemoryController {
         else if self.ram.has_address(position) {
             self.ram.set(position, value)
         }
-        else if self.oam.has_address(position) {
-            self.oam.set(position, value)
+        else if self.oam.lock().has_address(position) {
+            self.oam.lock().set(position, value)
         }
         else if self.io_map.lock().has_address(position) {
             self.io_map.lock().set(position, value)
@@ -101,7 +101,7 @@ impl MemoryController {
             vram: Arc::new(Mutex::new(VRAM::new())),
             sram: SRAM::new(),
             ram: RAM::new(),
-            oam: OAM::new(),
+            oam: Arc::new(Mutex::new(OAM::new())),
             io_map: Arc::new(Mutex::new(IOMap::new())),
             hram: HRAM::new()
         }
@@ -128,6 +128,10 @@ impl MemoryController {
 
     pub fn get_vram_arc(&self) -> Arc<Mutex<VRAM>> {
         self.vram.clone()
+    }
+
+    pub fn get_oam_arc(&self) -> Arc<Mutex<OAM>> {
+        self.oam.clone()
     }
 
     pub fn get_io_map(&self) -> Arc<Mutex<IOMap>> {
@@ -192,7 +196,7 @@ mod tests {
 
         memory_controller.set(0xFE00, expected_value);
 
-        assert_eq!(memory_controller.oam.get(0xFE00), expected_value);
+        assert_eq!(memory_controller.oam.lock().get(0xFE00), expected_value);
     }
 
     #[test]
@@ -200,7 +204,7 @@ mod tests {
         let expected_value = 0x12;
         let mut memory_controller = MemoryController::new();
 
-        memory_controller.oam.set(0xFE00, expected_value);
+        memory_controller.oam.lock().set(0xFE00, expected_value);
 
         assert_eq!(memory_controller.get(0xFE00), expected_value);
     }

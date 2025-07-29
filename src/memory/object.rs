@@ -16,8 +16,8 @@ pub struct Object {
 impl Object {
     pub fn new() -> Self {
         Self {
-            x: 0,
             y: 0,
+            x: 0,
             tile: 0,
             attributes: 0,
 
@@ -32,8 +32,8 @@ impl Object {
 
     pub fn set(&mut self, position: u16, value: u8) {
         match position {
-            0 => self.x = value,
-            1 => self.y = value,
+            0 => self.y = value,
+            1 => self.x = value,
             2 => self.tile = value,
             3 => {
                 self.attributes = value;
@@ -51,21 +51,21 @@ impl Object {
 
     pub fn get(&self, position: u16) -> u8 {
         match position {
-            0 => self.x,
-            1 => self.y,
+            0 => self.y,
+            1 => self.x,
             2 => self.tile,
             3 => self.attributes,
             _ => 0xFF
         }
     }
 
+    pub fn get_y(&self) -> u8 {
+        self.y
+    }
     pub fn get_x(&self) -> u8 {
         self.x
     }
 
-    pub fn get_y(&self) -> u8 {
-        self.y
-    }
 
     pub fn get_tile(&self) -> u8 {
         self.tile
@@ -94,15 +94,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn x_is_set_properly() {
+    fn y_is_set_properly() {
         let mut object = Object::new();
         object.set(0, 0x12);
 
-        assert_eq!(object.get_x(), 0x12);
+        assert_eq!(object.get_y(), 0x12);
     }
 
     #[test]
-    fn x_can_be_got_by_get() {
+    fn y_can_be_got_by_get() {
         let mut object = Object::new();
         object.set(0, 0x12);
 
@@ -110,15 +110,15 @@ mod tests {
     }
 
     #[test]
-    fn y_is_set_properly() {
+    fn x_is_set_properly() {
         let mut object = Object::new();
         object.set(1, 0x34);
 
-        assert_eq!(object.get_y(), 0x34);
+        assert_eq!(object.get_x(), 0x34);
     }
 
     #[test]
-    fn y_can_be_got_by_get() {
+    fn x_can_be_got_by_get() {
         let mut object = Object::new();
         object.set(1, 0x34);
 

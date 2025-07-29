@@ -31,6 +31,10 @@ impl OAM {
     pub fn new() -> Self {
         Self { data: vec![Object::new(); 40] }
     }
+    
+    pub fn get_objects(&self) -> &[Object] {
+        self.data.as_slice()
+    }
 }
 
 

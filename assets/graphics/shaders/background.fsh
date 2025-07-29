@@ -34,8 +34,16 @@ void main()
 
 	uint tileId = texelFetch(bgMap, tile_position, 0).r ;
 
-	uint sampledLowByte = texelFetch(useBank1(tileId) ? tileMapBank1 : tileMapBank0, ivec3(0, tile_coords.y, tileId % 128u), 0).r % 256u;
-	uint sampledHighByte = texelFetch(useBank1(tileId) ? tileMapBank1 : tileMapBank0, ivec3(1, tile_coords.y, tileId % 128u), 0).r % 256u;
+	uint sampledLowByte, sampledHighByte;
+
+	if (useBank1(tileId))  {
+		sampledLowByte = texelFetch(tileMapBank1, ivec3(0, tile_coords.y, tileId % 128u), 0).r % 256u;
+		sampledHighByte = texelFetch(tileMapBank1, ivec3(1, tile_coords.y, tileId % 128u), 0).r % 256u;
+	}
+	else {
+		sampledLowByte = texelFetch(tileMapBank0, ivec3(0, tile_coords.y, tileId % 128u), 0).r % 256u;
+		sampledHighByte = texelFetch(tileMapBank0, ivec3(1, tile_coords.y, tileId % 128u), 0).r % 256u;
+	}
 
 	bool isLightPixel = ((int(sampledLowByte) << tile_coords.x) & 128) != 0;
 	bool isDarkPixel = ((int(sampledHighByte) << tile_coords.x) & 128) != 0;

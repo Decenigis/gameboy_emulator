@@ -8,7 +8,7 @@ use dec_gl::texture::{Texture2Du8, Texture3Du8};
 use dec_gl::types::{ivec2, ivec3, IVec2};
 use parking_lot::Mutex;
 use crate::memory::io_map::VideoIO;
-use crate::memory::VRAM;
+use crate::memory::{OAM, VRAM};
 use crate::renderer::RendererError;
 
 pub struct VideoProcessor {
@@ -20,8 +20,10 @@ pub struct VideoProcessor {
     map_bank_1: Texture2Du8,
 
     background_renderable: Box<dyn Renderable<Vertex2d>>,
+    object_renderable_small: Box<dyn Renderable<Vertex2d>>,
 
     vram: Arc<Mutex<VRAM>>,
+    oam: Arc<Mutex<OAM>>,
     video_io: Arc<Mutex<VideoIO>>
 }
 
@@ -53,8 +55,10 @@ impl VideoProcessor {
         map_bank_1: Texture2Du8,
 
         mut background_renderable: Box<dyn Renderable<Vertex2d>>,
+        mut object_renderable_small: Box<dyn Renderable<Vertex2d>>,
 
         vram: Arc<Mutex<VRAM>>,
+        oam: Arc<Mutex<OAM>>,
         video_io: Arc<Mutex<VideoIO>>
     )
         -> Result<VideoProcessor, RendererError>
@@ -67,7 +71,21 @@ impl VideoProcessor {
             Vertex2d { x: 0.0, y: 144.0, u: 0.0, v: 1.0},
             Vertex2d { x: 160.0, y: 0.0, u: 1.0, v: 0.0},
             Vertex2d { x: 160.0, y: 144.0, u: 1.0, v: 1.0}],
-        None)
+                                               None)
+        {
+            Ok(_) => {}
+            Err(error) => return Err(RendererError::GLError { error })
+        }
+
+        match object_renderable_small.initialise(&vec![
+            Vertex2d { x: 0.0, y: 0.0, u: 0.0, v: 0.0},
+            Vertex2d { x: 0.0, y: 8.0, u: 0.0, v: 1.0},
+            Vertex2d { x: 8.0, y: 0.0, u: 1.0, v: 0.0},
+
+            Vertex2d { x: 0.0, y: 8.0, u: 0.0, v: 1.0},
+            Vertex2d { x: 8.0, y: 0.0, u: 1.0, v: 0.0},
+            Vertex2d { x: 8.0, y: 8.0, u: 1.0, v: 1.0}],
+                                               None)
         {
             Ok(_) => {}
             Err(error) => return Err(RendererError::GLError { error })
@@ -82,7 +100,10 @@ impl VideoProcessor {
             map_bank_1,
 
             background_renderable,
+            object_renderable_small,
+
             vram,
+            oam,
             video_io
         } )
     }
@@ -171,7 +192,7 @@ impl VideoProcessor {
         );
     }
 
-    fn set_shader_values(&self, shader: &mut Box<dyn ShaderProgram>, scroll: &IVec2, draw_cutoff: &IVec2, bg_pal: &u8){
+    fn set_shader_values_for_background(&self, shader: &mut Box<dyn ShaderProgram>, scroll: &IVec2, draw_cutoff: &IVec2, bg_pal: &u8){
         shader.bind();
         shader.set_uniform("scroll".to_string(), scroll);
         shader.set_uniform("draw_cutoff".to_string(), draw_cutoff);
@@ -183,10 +204,10 @@ impl VideoProcessor {
             let video_io_mutex = self.video_io.clone();
             let video_io_guard = video_io_mutex.lock();
 
-            self.set_shader_values(shader,
-                                   &ivec2(video_io_guard.get_bg_x() as i32, video_io_guard.get_bg_y() as i32),
-                                   &ivec2(0, video_io_guard.get_ly() as i32),
-                                   &video_io_guard.get_bg_pal()
+            self.set_shader_values_for_background(shader,
+                                                  &ivec2(video_io_guard.get_bg_x() as i32, video_io_guard.get_bg_y() as i32),
+                                                  &ivec2(0, video_io_guard.get_ly() as i32),
+                                                  &video_io_guard.get_bg_pal()
             );
             self.bind_textures_for_background(video_io_guard.get_lcd_ctrl());
         }
@@ -201,15 +222,51 @@ impl VideoProcessor {
             let video_io_mutex = self.video_io.clone();
             let video_io_guard = video_io_mutex.lock();
 
-            self.set_shader_values(shader,
-                                   &ivec2(!video_io_guard.get_win_x().wrapping_sub(8) as i32, !video_io_guard.get_win_y().wrapping_sub(1) as i32),
-                                   &ivec2((video_io_guard.get_win_x() as i32) - 8, video_io_guard.get_win_y() as i32),
-                                   &video_io_guard.get_bg_pal()
+            self.set_shader_values_for_background(shader,
+                                                  &ivec2(!video_io_guard.get_win_x().wrapping_sub(8) as i32, !video_io_guard.get_win_y().wrapping_sub(1) as i32),
+                                                  &ivec2((video_io_guard.get_win_x() as i32) - 8, video_io_guard.get_win_y() as i32),
+                                                  &video_io_guard.get_bg_pal()
             );
             self.bind_textures_for_window(video_io_guard.get_lcd_ctrl());
         }
 
         self.background_renderable.draw();
+
+        Ok(())
+    }
+
+    fn set_shader_values_for_object(&self, shader: &mut Box<dyn ShaderProgram>, draw_cutoff: &IVec2, obj_pal_0: &u8, obj_pal_1: &u8){
+        shader.bind();
+        shader.set_uniform("drawCutoff".to_string(), draw_cutoff);
+        shader.set_uniform("objPal0".to_string(), &(*obj_pal_0 as i32));
+        shader.set_uniform("objPal1".to_string(), &(*obj_pal_1 as i32));
+    }
+
+    fn draw_sprites(&mut self, shader: &mut Box<dyn ShaderProgram>) -> Result<(), RendererError> {
+        {
+            let video_io_mutex = self.video_io.clone();
+            let video_io_guard = video_io_mutex.lock();
+
+            self.set_shader_values_for_object(shader,
+                                              &ivec2(0, video_io_guard.get_ly() as i32),
+                                              &video_io_guard.get_obj_pal_0(),
+                                              &video_io_guard.get_obj_pal_1(),
+            );
+
+            self.bind_tile_textures_to_units(true);
+        }
+
+        for object in self.oam.lock().get_objects() {
+            shader.set_uniform("objectPosition".to_string(), &ivec2(object.get_x() as i32, object.get_y() as i32));
+            shader.set_uniform("tileId".to_string(), &(object.get_tile() as i32));
+
+            shader.set_uniform("priority".to_string(), &(object.get_priority() as i32));
+            shader.set_uniform("verticalFlip".to_string(), &(object.get_vertical_flip() as i32));
+            shader.set_uniform("horizontalFlip".to_string(), &(object.get_horizontal_flip() as i32));
+            shader.set_uniform("dmgPalette".to_string(), &(object.get_dmg_palette() as i32));
+
+            self.object_renderable_small.draw();
+        }
 
         Ok(())
     }
@@ -235,6 +292,16 @@ impl VideoProcessor {
                     return Err(RendererError::GLError { error });
                 }
             }
+            if LCDCMask::mask(lcd_ctrl, LCDCMask::OBJ_ENABLE) {
+                match shader_manager.bind("OBJECT".to_string()) {
+                    Ok(object_shader) => {
+                        self.draw_sprites(object_shader)?;
+                    }
+                    Err(error) => {
+                        return Err(RendererError::GLError { error });
+                    }
+                }
+            }
         }
 
         Ok(())
@@ -256,7 +323,7 @@ mod tests {
     use mockall::predicate::eq;
     use parking_lot::Mutex;
     use crate::memory::io_map::VideoIO;
-    use crate::memory::{MemoryTrait, VRAM};
+    use crate::memory::{MemoryTrait, OAM, VRAM};
     use crate::renderer::video_processor::LCDCMask;
     use crate::renderer::VideoProcessor;
 
@@ -316,7 +383,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             vram.clone(),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.try_update_graphics_data();
@@ -343,7 +412,9 @@ mod tests {
             tile_bank_0, MockTexture3Du8::default(), MockTexture3Du8::default(),
             MockTexture2Du8::default(), MockTexture2Du8::default(),
             get_generic_renderable(),
+            get_generic_renderable(),
             vram.clone(),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.try_update_graphics_data();
@@ -364,7 +435,9 @@ mod tests {
             MockTexture3Du8::default(), tile_bank_1, MockTexture3Du8::default(),
             MockTexture2Du8::default(), MockTexture2Du8::default(),
             get_generic_renderable(),
+            get_generic_renderable(),
             vram.clone(),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.try_update_graphics_data();
@@ -384,7 +457,9 @@ mod tests {
             MockTexture3Du8::default(), MockTexture3Du8::default(), tile_bank_2,
             MockTexture2Du8::default(), MockTexture2Du8::default(),
             get_generic_renderable(),
+            get_generic_renderable(),
             vram.clone(),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.try_update_graphics_data();
@@ -405,7 +480,9 @@ mod tests {
             MockTexture3Du8::default(), MockTexture3Du8::default(), MockTexture3Du8::default(),
             map_bank_0, MockTexture2Du8::default(),
             get_generic_renderable(),
+            get_generic_renderable(),
             vram.clone(),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.try_update_graphics_data();
@@ -426,7 +503,9 @@ mod tests {
             MockTexture3Du8::default(), MockTexture3Du8::default(), MockTexture3Du8::default(),
             MockTexture2Du8::default(), map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             vram.clone(),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.try_update_graphics_data();
@@ -445,7 +524,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
         video_processor.bind_textures_for_background(LCDCMask::LCD_ENABLE);
@@ -465,7 +546,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
         video_processor.bind_textures_for_background(LCDCMask::LCD_ENABLE | LCDCMask::WIN_AND_BG_MAP);
@@ -485,7 +568,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
         video_processor.bind_textures_for_background(LCDCMask::LCD_ENABLE);
@@ -508,7 +593,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
         video_processor.bind_textures_for_background(LCDCMask::LCD_ENABLE);
@@ -527,7 +614,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
         video_processor.bind_textures_for_background(LCDCMask::LCD_ENABLE | LCDCMask::BG_TILE_BANK);
@@ -546,7 +635,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
         video_processor.bind_textures_for_window(LCDCMask::LCD_ENABLE);
@@ -565,7 +656,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             Arc::new(Mutex::new(VideoIO::new()))).unwrap();
 
         video_processor.bind_textures_for_window(LCDCMask::LCD_ENABLE | LCDCMask::WIN_TILE_BANK);
@@ -596,7 +689,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             vram.clone(),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.draw(&mut shader_manager).unwrap();
@@ -629,15 +724,16 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.draw_background(&mut shader).unwrap();
 
         assert_eq!(scroll.to_string(), *uniforms.borrow().get("scroll").unwrap());
-        //assert_eq!(ivec2(0, ly as i32).to_string(), *uniforms.borrow().get("draw_cutoff").unwrap());
-        //this should be uncommented when the actual drawing logic is wired into a CPU. LY being 91 on init means no drawing at all
-        // (The code should be changed to make this test pass)
+        assert_eq!(ivec2(0, ly as i32).to_string(), *uniforms.borrow().get("draw_cutoff").unwrap());
+
         assert_eq!(bg_pal.to_string(), *uniforms.borrow().get("bg_pal").unwrap());
     }
 
@@ -667,7 +763,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             get_generic_renderable(),
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.draw_window(&mut shader).unwrap();
@@ -685,9 +783,7 @@ mod tests {
     #[test]
     fn does_not_draw_bg_when_lcd_disabled() {
         let video_io = Arc::new(Mutex::new(VideoIO::new()));
-
         let draw_count = Rc::new(RefCell::new(0));
-
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
         let mut shader_manager = ShaderManager::new();
@@ -710,7 +806,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             renderable,
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.draw(&mut shader_manager).unwrap();
@@ -721,9 +819,7 @@ mod tests {
     #[test]
     fn draws_bg_when_lcd_on_and_bg_enabled() {
         let video_io = Arc::new(Mutex::new(VideoIO::new()));
-
         let draw_count = Rc::new(RefCell::new(0));
-
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
         let mut shader_manager = ShaderManager::new();
@@ -746,7 +842,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             renderable,
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.draw(&mut shader_manager).unwrap();
@@ -757,9 +855,7 @@ mod tests {
     #[test]
     fn draws_win_when_lcd_on_and_win_enabled() {
         let video_io = Arc::new(Mutex::new(VideoIO::new()));
-
         let draw_count = Rc::new(RefCell::new(0));
-
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
         let mut shader_manager = ShaderManager::new();
@@ -782,7 +878,9 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             renderable,
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.draw(&mut shader_manager).unwrap();
@@ -793,9 +891,7 @@ mod tests {
     #[test]
     fn draws_win_and_bg_when_lcd_on_and_bg_and_win_enabled() {
         let video_io = Arc::new(Mutex::new(VideoIO::new()));
-
         let draw_count = Rc::new(RefCell::new(0));
-
         let (tile_bank_0, tile_bank_1, tile_bank_2, map_bank_0, map_bank_1) = get_mock_textures_with_expectations();
 
         let mut shader_manager = ShaderManager::new();
@@ -818,11 +914,63 @@ mod tests {
             tile_bank_0, tile_bank_1, tile_bank_2,
             map_bank_0, map_bank_1,
             renderable,
+            get_generic_renderable(),
             Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
             video_io.clone()).unwrap();
 
         video_processor.draw(&mut shader_manager).unwrap();
 
         assert_eq!(2, *draw_count.borrow());
+    }
+
+    #[test]
+    fn binds_tile_map_0_for_objects() {
+        let (mut tile_bank_0, mut tile_bank_1, mut tile_bank_2, mut map_bank_0, map_bank_1) = get_mock_textures();
+        tile_bank_1.expect_bind_to_unit().returning(|_| ());
+        tile_bank_2.expect_bind_to_unit().returning(|_| ());
+        map_bank_0.expect_bind_to_unit().returning(|_| ());
+
+        tile_bank_0.expect_bind_to_unit().with(eq(0)).times(1).returning(|_| ());
+
+        let mut video_processor = VideoProcessor::new(
+            tile_bank_0, tile_bank_1, tile_bank_2,
+            map_bank_0, map_bank_1,
+            get_generic_renderable(),
+            get_generic_renderable(),
+            Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
+            Arc::new(Mutex::new(VideoIO::new()))).unwrap();
+
+        let mut shader: Box<dyn ShaderProgram> = Box::new(
+            NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
+        );
+
+        video_processor.draw_sprites(&mut shader);
+    }
+
+    #[test]
+    fn binds_tile_map_1_for_objects() {
+        let (mut tile_bank_0, mut tile_bank_1, mut tile_bank_2, mut map_bank_0, map_bank_1) = get_mock_textures();
+        tile_bank_0.expect_bind_to_unit().returning(|_| ());
+        tile_bank_2.expect_bind_to_unit().returning(|_| ());
+        map_bank_0.expect_bind_to_unit().returning(|_| ());
+
+        tile_bank_1.expect_bind_to_unit().with(eq(1)).times(1).returning(|_| ());
+
+        let mut video_processor = VideoProcessor::new(
+            tile_bank_0, tile_bank_1, tile_bank_2,
+            map_bank_0, map_bank_1,
+            get_generic_renderable(),
+            get_generic_renderable(),
+            Arc::new(Mutex::new(VRAM::new())),
+            Arc::new(Mutex::new(OAM::new())),
+            Arc::new(Mutex::new(VideoIO::new()))).unwrap();
+
+        let mut shader: Box<dyn ShaderProgram> = Box::new(
+            NullableShaderProgram::new(Rc::new(RefCell::new(HashMap::new())), Rc::new(RefCell::new(false)))
+        );
+
+        video_processor.draw_sprites(&mut shader);
     }
 }

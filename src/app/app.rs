@@ -45,6 +45,10 @@ impl App {
              "BACKGROUND".to_string(),
              Box::new(GLShaderProgram::load_shader_program("assets/graphics/shaders/background", "BACKGROUND", false).unwrap())
          ).unwrap();
+         shader_manager.register_shader(
+             "OBJECT".to_string(),
+             Box::new(GLShaderProgram::load_shader_program("assets/graphics/shaders/object", "OBJECT", false).unwrap())
+         ).unwrap();
 
          let framebuffer = SimpleFramebuffer::new(window_size.x as i32, window_size.y as i32).unwrap();
 
@@ -85,6 +89,24 @@ impl App {
             Err(_) => return
         };
 
+
+        match self.shader_manager.bind("OBJECT".to_string()) {
+            Ok(shader) => {
+                shader.set_uniform("pv".to_string(), &self.camera.get_matrix());
+
+                shader.set_uniform("tileMapBank0".to_string(), &0);
+                shader.set_uniform("tileMapBank1".to_string(), &1);
+
+                shader.set_uniform("gbColour0".to_string(), &GB_COLUR_0);
+                shader.set_uniform("gbColour1".to_string(), &GB_COLUR_1);
+                shader.set_uniform("gbColour2".to_string(), &GB_COLUR_2);
+                shader.set_uniform("gbColour3".to_string(), &GB_COLUR_3);
+
+                shader
+            }
+            Err(_) => return
+        };
+
         let memory_controller = Arc::new(Mutex::new(MemoryController::new()));
         let cpu = Box::new(GameBoyCPU::new_with_nop());
 
@@ -96,6 +118,7 @@ impl App {
 
         let video_processor = {
             let vram = memory_controller.lock().get_vram_arc();
+            let oam = memory_controller.lock().get_oam_arc();
             let video_io = memory_controller.lock().get_io_map().lock().get_video_io();
 
             VideoProcessor::new(
@@ -107,8 +130,10 @@ impl App {
                 Texture2Du8::default(),
 
                 Box::new(GlRenderable::<Vertex2d>::new::<Vertex2d>()),
+                Box::new(GlRenderable::<Vertex2d>::new::<Vertex2d>()),
 
                 vram,
+                oam,
                 video_io,
             ).unwrap()
         };
@@ -126,7 +151,8 @@ impl App {
         while !self.gl_handler.borrow().wind_should_close() {
             self.framebuffer.clear();
 
-            for event in self.gl_handler.borrow_mut().handle_events() {
+            let events = self.gl_handler.borrow_mut().handle_events();
+            for event in events.clone() {
                 match event {
                     WindowEvent::Key(Key::F12, _, Action::Press, _) => {
                         let mut file = File::create("memdump.bin").unwrap();
@@ -193,6 +219,10 @@ impl App {
                         } else {
                             joypad.lock().set_select(false);
                         }
+                    }
+                    WindowEvent::Key(Key::V, _, Action::Press, _) => {
+                        let new_vsync = { !self.gl_handler.borrow().get_vsync() };
+                        self.gl_handler.borrow_mut().set_vsync(new_vsync);
                     }
                     _ => {}
                 }
