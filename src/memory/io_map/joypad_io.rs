@@ -63,7 +63,7 @@ impl JoypadIO {
             if self.up {
                 self.memory_value &= 0b11111011;
             }
-            if self.left {
+            if self.down {
                 self.memory_value &= 0b11110111;
             }
         }
@@ -165,28 +165,82 @@ mod tests {
     }
 
     #[test]
-    fn gets_udlr_correctly() {
+    fn gets_right_correctly() {
         let mut joypad_io = JoypadIO::new();
 
         joypad_io.set_right(true);
-        joypad_io.set_left(false);
-        joypad_io.set_up(true);
-        joypad_io.set_down(false);
 
         joypad_io.set(0xFF00, 0x20);
-        assert_eq!(0b11101010, joypad_io.get(0xFF00));
+        assert_eq!(0b11101110, joypad_io.get(0xFF00));
     }
 
     #[test]
-    fn gets_buttons_correctly() {
+    fn gets_left_correctly() {
+        let mut joypad_io = JoypadIO::new();
+
+        joypad_io.set_left(true);
+
+        joypad_io.set(0xFF00, 0x20);
+        assert_eq!(0b11101101, joypad_io.get(0xFF00));
+    }
+
+    #[test]
+    fn gets_up_correctly() {
+        let mut joypad_io = JoypadIO::new();
+
+        joypad_io.set_up(true);
+
+        joypad_io.set(0xFF00, 0x20);
+        assert_eq!(0b11101011, joypad_io.get(0xFF00));
+    }
+
+    #[test]
+    fn gets_down_correctly() {
+        let mut joypad_io = JoypadIO::new();
+
+        joypad_io.set_down(true);
+
+        joypad_io.set(0xFF00, 0x20);
+        assert_eq!(0b11100111, joypad_io.get(0xFF00));
+    }
+
+    #[test]
+    fn gets_a_correctly() {
         let mut joypad_io = JoypadIO::new();
 
         joypad_io.set_a(true);
-        joypad_io.set_b(false);
-        joypad_io.set_select(true);
-        joypad_io.set_start(false);
 
         joypad_io.set(0xFF00, 0x10);
-        assert_eq!(0b11011010, joypad_io.get(0xFF00));
+        assert_eq!(0b11011110, joypad_io.get(0xFF00));
+    }
+
+    #[test]
+    fn gets_b_correctly() {
+        let mut joypad_io = JoypadIO::new();
+
+        joypad_io.set_b(true);
+
+        joypad_io.set(0xFF00, 0x10);
+        assert_eq!(0b11011101, joypad_io.get(0xFF00));
+    }
+
+    #[test]
+    fn gets_select_correctly() {
+        let mut joypad_io = JoypadIO::new();
+
+        joypad_io.set_select(true);
+
+        joypad_io.set(0xFF00, 0x10);
+        assert_eq!(0b11011011, joypad_io.get(0xFF00));
+    }
+
+    #[test]
+    fn gets_start_correctly() {
+        let mut joypad_io = JoypadIO::new();
+
+        joypad_io.set_start(true);
+
+        joypad_io.set(0xFF00, 0x10);
+        assert_eq!(0b11010111, joypad_io.get(0xFF00));
     }
 }
