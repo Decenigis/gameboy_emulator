@@ -135,8 +135,8 @@ macro_rules! jp_cc_nn {
 
 jp_cc_nn!(0xC2, nz, Nz, ZERO_FLAG, false);
 jp_cc_nn!(0xCA, z, Z, ZERO_FLAG, true);
-jp_cc_nn!(0xD2, nc, Nc, ZERO_FLAG, false);
-jp_cc_nn!(0xDA, c, C, ZERO_FLAG, true);
+jp_cc_nn!(0xD2, nc, Nc, CARRY_FLAG, false);
+jp_cc_nn!(0xDA, c, C, CARRY_FLAG, true);
 
 
 

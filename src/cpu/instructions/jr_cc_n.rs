@@ -137,8 +137,8 @@ macro_rules! jr_cc_n {
 
 jr_cc_n!(0x20, nz, Nz, ZERO_FLAG, false);
 jr_cc_n!(0x28, z, Z, ZERO_FLAG, true);
-jr_cc_n!(0x30, nc, Nc, ZERO_FLAG, false);
-jr_cc_n!(0x38, c, C, ZERO_FLAG, true);
+jr_cc_n!(0x30, nc, Nc, CARRY_FLAG, false);
+jr_cc_n!(0x38, c, C, CARRY_FLAG, true);
 
 
 
