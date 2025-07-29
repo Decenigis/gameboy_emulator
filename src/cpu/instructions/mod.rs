@@ -35,6 +35,7 @@ mod call_cc_nn;
 mod jr_cc_n;
 mod jp_cc_nn;
 
+mod rlca; //0x07
 mod rrca; //0x0F
 mod rla; //0x17
 mod jr_n; //0x18
@@ -102,6 +103,7 @@ use call_cc_nn::*;
 use jr_cc_n::*;
 use jp_cc_nn::*;
 
+use rlca::RlcA;         //0x07
 use rrca::RrcA;         //0x0F
 use rla::RlA;           //0x17
 use jr_n::JrN;          //0x18

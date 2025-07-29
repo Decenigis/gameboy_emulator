@@ -236,6 +236,18 @@ impl ALU {
         flags.set_bit(Self::ZERO_FLAG, a.is_zero());
     }
 
+    pub fn rlca(&self, a: &mut Register8) {
+        let mut flags = self.flags.borrow_mut();
+        flags.set_bit(Self::SUB_FLAG, false);
+        flags.set_bit(Self::HALF_CARRY_FLAG, false);
+        flags.set_bit(Self::CARRY_FLAG, a.get_bit(7));
+
+        let value = a.get_value();
+        a.set_value((value << 1) | ((value & 0x80) >> 7));
+
+        flags.set_bit(Self::ZERO_FLAG, a.is_zero());
+    }
+
     pub fn rl(&self, a: &mut Register8) {
         let mut flags = self.flags.borrow_mut();
         flags.set_bit(Self::SUB_FLAG, false);
@@ -1262,6 +1274,45 @@ mod tests {
 
         assert_eq!(0b10000000, a.get_value());
         assert_eq!(false, flags.borrow().get_bit(ALU::CARRY_FLAG));
+    }
+
+    #[test]
+    fn rlca_rolls_correctly() {
+        let mut a = Register8::new(0b10001000);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.rlca(&mut a);
+
+        assert_eq!(a.get_value(), 0b00010001);
+    }
+
+    #[test]
+    fn rlca_sets_flags_correctly_for_zero_no_carry() {
+        let mut a = Register8::new(0b00000000);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.rlca(&mut a);
+
+        assert_eq!(true, flags.borrow().get_bit(ALU::ZERO_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::SUB_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::CARRY_FLAG));
+    }
+
+    #[test]
+    fn rlca_sets_flags_correctly_for_nonzero_carry() {
+        let mut a = Register8::new(0b10000000);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        alu.rlca(&mut a);
+
+        assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::SUB_FLAG));
+        assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+        assert_eq!(true, flags.borrow().get_bit(ALU::CARRY_FLAG));
     }
 
     #[test]
