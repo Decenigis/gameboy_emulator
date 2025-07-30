@@ -47,6 +47,7 @@ mod ldi_a_hl; //0x2A
 mod cpl_a; //0x2F
 mod ld_sp_nn; //0x31
 mod ld_hl_n; //0x36
+mod ldd_a_hl; //0x3A
 mod halt; //0x76
 mod add_a_a; //0x87
 mod and_a_a; //0xA7
@@ -67,6 +68,7 @@ mod jp_hl; //0xE9
 mod ld_nn_a; //0xEA
 mod ldh_a_n; //0xF0
 mod di; //0xF3
+mod ld_hl_sp_n; // 0xF8
 mod ld_sp_hl; // 0xF9
 mod ld_a_nn; //0xFA
 mod ei; //0xFB
@@ -115,6 +117,7 @@ use ldi_hl_a::LdiHlA;   //0x22
 use inc_hl::IncHl;      //0x23
 use ldi_a_hl::LdiAHl;   //0x2A
 use cpl_a::CplA;        //0x2F
+use ldd_a_hl::LddAHl;   //0x3A
 use ld_sp_nn::LdSpNn;   //0x31
 use ld_hl_n::LdHlN;     //0x36
 use halt::Halt;         //0x76
@@ -137,6 +140,7 @@ use jp_hl::JpHl;        //0xE9
 use ld_nn_a::LdNNA;     //0xEA
 use ldh_a_n::LdhAN;     //0xF0
 use di::Di;             //0xF3
+use ld_hl_sp_n::LdHlSpN;//0xF8
 use ld_sp_hl::LdSpHl;   //0xF9
 use ld_a_nn::LdANN;     //0xFA
 use ei::Ei;             //0xFB

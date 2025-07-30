@@ -122,7 +122,7 @@ res_b_hl!(0x8E, 1);
 res_b_hl!(0x96, 2);
 res_b_hl!(0x9E, 3);
 res_b_hl!(0xA6, 4);
-res_b_hl!(0xAA, 5);
+res_b_hl!(0xAE, 5);
 res_b_hl!(0xB6, 6);
 res_b_hl!(0xBE, 7);
 
@@ -135,7 +135,7 @@ res_b_hl!(0xBE, 7);
         return_if_is_instruction!(Res2Hl, $opcode); //0x96
         return_if_is_instruction!(Res3Hl, $opcode); //0x9E
         return_if_is_instruction!(Res4Hl, $opcode); //0xA6
-        return_if_is_instruction!(Res5Hl, $opcode); //0xAA
+        return_if_is_instruction!(Res5Hl, $opcode); //0xAE
         return_if_is_instruction!(Res6Hl, $opcode); //0xB6
         return_if_is_instruction!(Res7Hl, $opcode); //0xBE
     }
