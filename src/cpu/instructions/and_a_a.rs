@@ -39,20 +39,20 @@ mod and_a_a {
     use super::*;
 
     reusable_testing_macro!(0xA7, AndAA);
-    
+
     #[test]
     fn and_r_to_a_on_tick() {
         let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
         registers.a.borrow_mut().set_value(0x12);
-        
+
         let memory = Arc::new(Mutex::new(MemoryController::new()));
         let mut alu = ALU::new(registers.f.clone());
-        
+
         let mut instruction = AndAA {};
-        
+
         let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
-        
+
         assert_eq!(true, result);
-        assert_eq!(0x24, registers.a.borrow().get_value());
+        assert_eq!(0x12, registers.a.borrow().get_value());
     }
 }

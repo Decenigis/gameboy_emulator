@@ -29,7 +29,7 @@ impl Instruction for LddAHl {
             registers.a.borrow_mut().set_value(memory_controller.lock().get(registers.hl.get_value()));
         }
         else if self.counter == 0 {
-            registers.hl.increment();
+            registers.hl.decrement();
 
             return true;
         }
@@ -49,10 +49,10 @@ mod tests {
 
     #[test]
     fn load_n_on_tick_1() {
-        let mut registers = Registers::new(0, 0, 0, 0xC000, 0xC000, 0);
+        let mut registers = Registers::new(0, 0, 0, 0xC001, 0xC000, 0);
         let mut alu = ALU::new(registers.f.clone());
         let memory = Arc::new(Mutex::new(MemoryController::new()));
-        memory.lock().set(0xC000, 0x12);
+        memory.lock().set(0xC001, 0x12);
 
         let mut instruction = LddAHl { counter: 1 };
 
@@ -64,7 +64,7 @@ mod tests {
 
     #[test]
     fn write_value_on_tick_0_and_get_next_instruction() {
-        let mut registers = Registers::new(0, 0, 0, 0xC000, 0xC000, 0);
+        let mut registers = Registers::new(0, 0, 0, 0xC001, 0xC000, 0);
         let mut alu = ALU::new(registers.f.clone());
         let memory = Arc::new(Mutex::new(MemoryController::new()));
 
@@ -73,6 +73,6 @@ mod tests {
         let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(true, result);
-        assert_eq!(0xC001, registers.hl.get_value());
+        assert_eq!(0xC000, registers.hl.get_value());
     }
 }

@@ -68,7 +68,7 @@ mod tests {
 
         memory.lock().set(0xC000, 0x12);
 
-        let mut instruction = LdHlSpN { counter: 1, value: 0 };
+        let mut instruction = LdHlSpN { counter: 2, value: 0 };
 
         let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
