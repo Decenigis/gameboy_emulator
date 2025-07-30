@@ -49,6 +49,7 @@ mod ld_sp_nn; //0x31
 mod ld_hl_n; //0x36
 mod halt; //0x76
 mod add_a_a; //0x87
+mod and_a_a; //0xA7
 mod xor_a; //0xAF
 mod jp_nn; //0xC3
 mod ret; //0xC9
@@ -66,6 +67,7 @@ mod jp_hl; //0xE9
 mod ld_nn_a; //0xEA
 mod ldh_a_n; //0xF0
 mod di; //0xF3
+mod ld_sp_hl; // 0xF9
 mod ld_a_nn; //0xFA
 mod ei; //0xFB
 mod cp_a_n; //0xFE
@@ -117,6 +119,7 @@ use ld_sp_nn::LdSpNn;   //0x31
 use ld_hl_n::LdHlN;     //0x36
 use halt::Halt;         //0x76
 use add_a_a::AddAA;     //0x87
+use and_a_a::AndAA;     //0xA7
 use xor_a::XorA;        //0xAF
 use jp_nn::JpNn;        //0xC3
 use add_a_n::AddAN;     //0xC6
@@ -134,6 +137,7 @@ use jp_hl::JpHl;        //0xE9
 use ld_nn_a::LdNNA;     //0xEA
 use ldh_a_n::LdhAN;     //0xF0
 use di::Di;             //0xF3
+use ld_sp_hl::LdSpHl;   //0xF9
 use ld_a_nn::LdANN;     //0xFA
 use ei::Ei;             //0xFB
 use cp_a_n::CpAN;       //0xFE

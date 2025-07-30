@@ -34,7 +34,7 @@ impl Instruction for BadInstruction {
         //
         //file.write_all(memory.as_slice()).unwrap();
 
-        true //ignore bad instructions for now while other work is going on
+        false //ignore bad instructions for now while other work is going on
     }
 }
 
