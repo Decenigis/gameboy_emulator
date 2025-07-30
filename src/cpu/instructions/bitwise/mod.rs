@@ -3,6 +3,7 @@ mod bitwise;
 
 mod rr_r;
 mod bit_b_r;
+mod bit_b_hl;
 mod res_b_r;
 mod res_b_hl;
 mod set_b_r;
@@ -11,6 +12,7 @@ mod swap_r;
 
 use rr_r::*;
 use bit_b_r::*;
+use bit_b_hl::*;
 use res_b_r::*;
 use res_b_hl::*;
 use set_b_r::*;

@@ -38,7 +38,8 @@ macro_rules! bit_b_r {
                         return true;
                     }
 
-                    true
+                    self.counter -= 1;
+                    false
                 }
             }
 
