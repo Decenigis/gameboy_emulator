@@ -2,7 +2,7 @@ use crate::cpu::alu::ALU;
 use crate::cpu::instructions::*;
 use crate::cpu::registers::Registers;
 use crate::memory::MemoryController;
-use crate::{adc_a_r_decode_instruction, add_a_r_decode_instruction, add_hl_rr_decode_instruction, and_a_r_decode_instruction, call_cc_nn_decode_instruction, cp_a_r_decode_instruction, dec_r_decode_instruction, dec_rr_decode_instruction, inc_r_decode_instruction, inc_rr_decode_instruction, jp_cc_nn_decode_instruction, jr_cc_n_decode_instruction, ld_a_rr_decode_instruction, ld_hl_r_decode_instruction, ld_r_hl_decode_instruction, ld_r_n_decode_instruction, ld_r_r_decode_instruction, ld_rr_a_decode_instruction, ld_rr_nn_decode_instruction, or_a_r_decode_instruction, pop_rr_decode_instruction, push_rr_decode_instruction, ret_with_condition_decode_instruction, sbc_a_r_decode_instruction, sub_a_r_decode_instruction, xor_a_r_decode_instruction};
+use crate::{adc_a_r_decode_instruction, add_a_r_decode_instruction, add_hl_rr_decode_instruction, and_a_r_decode_instruction, call_cc_nn_decode_instruction, cp_a_r_decode_instruction, dec_r_decode_instruction, dec_rr_decode_instruction, inc_r_decode_instruction, inc_rr_decode_instruction, jp_cc_nn_decode_instruction, jr_cc_n_decode_instruction, ld_a_rr_decode_instruction, ld_hl_r_decode_instruction, ld_r_hl_decode_instruction, ld_r_n_decode_instruction, ld_r_r_decode_instruction, ld_rr_a_decode_instruction, ld_rr_nn_decode_instruction, or_a_r_decode_instruction, pop_rr_decode_instruction, push_rr_decode_instruction, ret_with_condition_decode_instruction, rst_nn_decode_instruction, sbc_a_r_decode_instruction, sub_a_r_decode_instruction, xor_a_r_decode_instruction};
 use parking_lot::Mutex;
 use std::sync::Arc;
 
@@ -87,6 +87,7 @@ pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     call_cc_nn_decode_instruction!(opcode);
     jr_cc_n_decode_instruction!(opcode);
     jp_cc_nn_decode_instruction!(opcode);
+    rst_nn_decode_instruction!(opcode);
 
     return_if_is_instruction!(RlcA, opcode);    //0x07
     return_if_is_instruction!(LdNnSp, opcode);  //0x08
@@ -99,6 +100,7 @@ pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     return_if_is_instruction!(CplA, opcode);    //0x2F
     return_if_is_instruction!(LdSpNn, opcode);  //0x31
     return_if_is_instruction!(LddHlA, opcode);  //0x32
+    return_if_is_instruction!(IncHlAddr, opcode);//0x34
     return_if_is_instruction!(LdHlN, opcode);   //0x36
     return_if_is_instruction!(LddAHl, opcode);  //0x3A
     return_if_is_instruction!(Halt, opcode);    //0x76

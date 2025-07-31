@@ -35,6 +35,7 @@ mod ld_a_rr;
 mod call_cc_nn;
 mod jr_cc_n;
 mod jp_cc_nn;
+mod rst_nn;
 
 mod rlca; //0x07
 mod ld_nn_sp; //0x08
@@ -48,6 +49,7 @@ mod ldi_a_hl; //0x2A
 mod cpl_a; //0x2F
 mod ld_sp_nn; //0x31
 mod ldd_hl_a; //0x32
+mod inc_hl_addr; //0x34
 mod ld_hl_n; //0x36
 mod ldd_a_hl; //0x3A
 mod halt; //0x76
@@ -111,6 +113,7 @@ use ld_a_rr::*;
 use call_cc_nn::*;
 use jr_cc_n::*;
 use jp_cc_nn::*;
+use rst_nn::*;
 
 use rlca::RlcA;         //0x07
 use ld_nn_sp::LdNnSp;   //0x08
@@ -123,6 +126,7 @@ use ldi_a_hl::LdiAHl;   //0x2A
 use cpl_a::CplA;        //0x2F
 use ld_sp_nn::LdSpNn;   //0x31
 use ldd_hl_a::LddHlA;   //0x32
+use inc_hl_addr::IncHlAddr; //0x34
 use ldd_a_hl::LddAHl;   //0x3A
 use ld_hl_n::LdHlN;     //0x36
 use halt::Halt;         //0x76
