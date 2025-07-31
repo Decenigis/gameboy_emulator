@@ -50,6 +50,7 @@ mod ld_hl_n; //0x36
 mod ldd_a_hl; //0x3A
 mod halt; //0x76
 mod add_a_a; //0x87
+mod and_a_hl; //0xA6
 mod and_a_a; //0xA7
 mod xor_a; //0xAF
 mod jp_nn; //0xC3
@@ -122,6 +123,7 @@ use ld_sp_nn::LdSpNn;   //0x31
 use ld_hl_n::LdHlN;     //0x36
 use halt::Halt;         //0x76
 use add_a_a::AddAA;     //0x87
+use and_a_hl::AndAHl;   //0xA6
 use and_a_a::AndAA;     //0xA7
 use xor_a::XorA;        //0xAF
 use jp_nn::JpNn;        //0xC3
