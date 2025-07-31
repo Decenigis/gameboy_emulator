@@ -34,7 +34,6 @@ impl Instruction for AndAHl {
     fn act(&mut self, registers: &mut Registers, alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         if self.counter == 1 {
             self.value = memory_controller.lock().get(registers.hl.get_value());
-            registers.pc.increment();
         }
         else if self.counter == 0 {
             alu.and(&mut *registers.a.borrow_mut(), &Register8::new(self.value));

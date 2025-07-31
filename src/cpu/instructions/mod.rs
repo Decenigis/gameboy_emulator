@@ -50,6 +50,7 @@ mod cpl_a; //0x2F
 mod ld_sp_nn; //0x31
 mod ldd_hl_a; //0x32
 mod inc_hl_addr; //0x34
+mod dec_hl_addr; //0x35
 mod ld_hl_n; //0x36
 mod ldd_a_hl; //0x3A
 mod halt; //0x76
@@ -128,6 +129,7 @@ use cpl_a::CplA;        //0x2F
 use ld_sp_nn::LdSpNn;   //0x31
 use ldd_hl_a::LddHlA;   //0x32
 use inc_hl_addr::IncHlAddr; //0x34
+use dec_hl_addr::DecHlAddr; //0x34
 use ldd_a_hl::LddAHl;   //0x3A
 use ld_hl_n::LdHlN;     //0x36
 use halt::Halt;         //0x76
