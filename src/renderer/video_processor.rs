@@ -192,11 +192,12 @@ impl VideoProcessor {
         );
     }
 
-    fn set_shader_values_for_background(&self, shader: &mut Box<dyn ShaderProgram>, scroll: &IVec2, draw_cutoff: &IVec2, bg_pal: &u8){
+    fn set_shader_values_for_background(&self, shader: &mut Box<dyn ShaderProgram>, scroll: &IVec2, scanline: u8, draw_cutoff: &IVec2, bg_pal: u8){
         shader.bind();
         shader.set_uniform("scroll".to_string(), scroll);
-        shader.set_uniform("draw_cutoff".to_string(), draw_cutoff);
-        shader.set_uniform("bg_pal".to_string(), &(*bg_pal as i32));
+        shader.set_uniform("scanline".to_string(), &(scanline as i32));
+        shader.set_uniform("drawCutoff".to_string(), draw_cutoff);
+        shader.set_uniform("bgPal".to_string(), &(bg_pal as i32));
     }
 
     fn draw_background(&mut self, shader: &mut Box<dyn ShaderProgram>) -> Result<(), RendererError> {
@@ -206,9 +207,11 @@ impl VideoProcessor {
 
             self.set_shader_values_for_background(shader,
                                                   &ivec2(video_io_guard.get_bg_x() as i32, video_io_guard.get_bg_y() as i32),
-                                                  &ivec2(0, video_io_guard.get_ly() as i32),
-                                                  &video_io_guard.get_bg_pal()
+                                                  video_io_guard.get_ly(),
+                                                  &IVec2{ x: 0,y: 0 },
+                                                  video_io_guard.get_bg_pal()
             );
+
             self.bind_textures_for_background(video_io_guard.get_lcd_ctrl());
         }
 
@@ -224,8 +227,9 @@ impl VideoProcessor {
 
             self.set_shader_values_for_background(shader,
                                                   &ivec2(!video_io_guard.get_win_x().wrapping_sub(8) as i32, !video_io_guard.get_win_y().wrapping_sub(1) as i32),
+                                                  video_io_guard.get_ly(),
                                                   &ivec2((video_io_guard.get_win_x() as i32) - 8, video_io_guard.get_win_y() as i32),
-                                                  &video_io_guard.get_bg_pal()
+                                                  video_io_guard.get_bg_pal()
             );
             self.bind_textures_for_window(video_io_guard.get_lcd_ctrl());
         }
@@ -732,9 +736,10 @@ mod tests {
         video_processor.draw_background(&mut shader).unwrap();
 
         assert_eq!(scroll.to_string(), *uniforms.borrow().get("scroll").unwrap());
-        assert_eq!(ivec2(0, ly as i32).to_string(), *uniforms.borrow().get("draw_cutoff").unwrap());
+        assert_eq!(ivec2(0, 0).to_string(), *uniforms.borrow().get("drawCutoff").unwrap());
+        assert_eq!((ly as i32).to_string(), *uniforms.borrow().get("scanline").unwrap());
 
-        assert_eq!(bg_pal.to_string(), *uniforms.borrow().get("bg_pal").unwrap());
+        assert_eq!(bg_pal.to_string(), *uniforms.borrow().get("bgPal").unwrap());
     }
 
     #[test]
@@ -776,8 +781,9 @@ mod tests {
         ).to_string(), *uniforms.borrow().get("scroll").unwrap());
         assert_eq!(ivec2((win_scroll_x as i32) - 8, win_scroll_y as i32)
                        .to_string(),
-                   *uniforms.borrow().get("draw_cutoff").unwrap());
-        assert_eq!(bg_pal.to_string(), *uniforms.borrow().get("bg_pal").unwrap());
+                   *uniforms.borrow().get("drawCutoff").unwrap());
+        assert_eq!((ly as i32).to_string(), *uniforms.borrow().get("scanline").unwrap());
+        assert_eq!(bg_pal.to_string(), *uniforms.borrow().get("bgPal").unwrap());
     }
 
     #[test]

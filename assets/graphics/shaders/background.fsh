@@ -10,13 +10,15 @@ uniform usampler3D tileMapBank1;
 uniform usampler2D bgMap;
 
 uniform ivec2 scroll;
-uniform ivec2 draw_cutoff;
+uniform ivec2 drawCutoff;
+uniform int scanline;
 
 uniform vec3 gbColour0;
 uniform vec3 gbColour1;
 uniform vec3 gbColour2;
 uniform vec3 gbColour3;
-uniform int bg_pal;
+uniform int bgPal;
+uniform int isWindow;
 
 bool useBank1(uint tileId) {
 	return tileId >= 128u;
@@ -24,7 +26,7 @@ bool useBank1(uint tileId) {
 
 void main()
 {
-	if (int(actualCoords.x) < draw_cutoff.x || int(actualCoords.y) != draw_cutoff.y) {
+	if (int(actualCoords.y) != scanline || int(actualCoords.x) < drawCutoff.x || int(actualCoords.y) < drawCutoff.y) {
 		discard;
 	}
 
@@ -51,7 +53,7 @@ void main()
 	int colour = (isLightPixel ? 1 : 0) + (isDarkPixel ? 2 : 0);
 	vec3 outColour;
 
-	switch ((bg_pal >> colour * 2) & 3) {
+	switch ((bgPal >> colour * 2) & 3) {
 		case 0:
 			outColour = gbColour0;
 			break;

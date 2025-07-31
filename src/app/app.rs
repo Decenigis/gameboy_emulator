@@ -147,6 +147,9 @@ impl App {
         let joypad = memory_controller.lock().get_io_map().lock().get_joypad_io();
 
         let mut _frame: u64 = 0;
+        
+        let mut last_frame = std::time::Instant::now();
+        let mut now = std::time::Instant::now();
 
         while !self.gl_handler.borrow().wind_should_close() {
             self.framebuffer.clear();
@@ -243,6 +246,12 @@ impl App {
             );
 
             self.gl_handler.borrow_mut().poll_window();
+            
+            now = std::time::Instant::now();
+            let elapsed = now.duration_since(last_frame);
+            last_frame = now;
+            
+            self.gl_handler.borrow_mut().get_window_mut().set_title(format!("GB EMULATOR - {} FPS", (1.0 / elapsed.as_secs_f64()).round()).as_str());
 
             _frame += 1;
         }
