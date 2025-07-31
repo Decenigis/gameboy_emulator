@@ -6,22 +6,22 @@ use crate::memory::{MemoryController, MemoryTrait};
 use parking_lot::Mutex;
 use std::sync::Arc;
 
-pub struct LdiHlA {
+pub struct LddHlA {
     counter: u8
 }
 
-impl Instruction for LdiHlA {
+impl Instruction for LddHlA {
 
     #[inline]
     fn from_opcode(opcode: &u8) -> Option<Box<dyn Instruction>> {
-        if *opcode == 0x22 {
-            return Some(Box::new(LdiHlA { counter: 1 }))
+        if *opcode == 0x32 {
+            return Some(Box::new(LddHlA { counter: 1 }))
         }
         None
     }
 
     fn get_opcode(&self) -> u8 {
-        0x22
+        0x32
     }
 
     fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
@@ -29,7 +29,7 @@ impl Instruction for LdiHlA {
             memory_controller.lock().set(registers.hl.get_value(), registers.a.borrow().get_value());
         }
         else if self.counter == 0 {
-            registers.hl.increment();
+            registers.hl.decrement();
 
             return true;
         }
@@ -45,7 +45,7 @@ impl Instruction for LdiHlA {
 mod tests {
     use super::*;
 
-    reusable_testing_macro!(0x22, LdiHlA);
+    reusable_testing_macro!(0x32, LddHlA);
 
     #[test]
     fn load_value_to_hl_on_tick_1() {
@@ -55,7 +55,7 @@ mod tests {
 
         registers.a.borrow_mut().set_value(0x12);
 
-        let mut instruction = LdiHlA { counter: 1 };
+        let mut instruction = LddHlA { counter: 1 };
 
         let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
@@ -69,11 +69,11 @@ mod tests {
         let mut alu = ALU::new(registers.f.clone());
         let memory = Arc::new(Mutex::new(MemoryController::new()));
 
-        let mut instruction = LdiHlA { counter: 0 };
+        let mut instruction = LddHlA { counter: 0 };
 
         let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
 
         assert_eq!(true, result);
-        assert_eq!(0xC001, registers.hl.get_value());
+        assert_eq!(0xBFFF, registers.hl.get_value());
     }
 }
