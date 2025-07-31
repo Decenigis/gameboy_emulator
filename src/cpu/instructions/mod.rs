@@ -53,6 +53,7 @@ mod inc_hl_addr; //0x34
 mod ld_hl_n; //0x36
 mod ldd_a_hl; //0x3A
 mod halt; //0x76
+mod add_a_hl; //0x86
 mod add_a_a; //0x87
 mod and_a_hl; //0xA6
 mod and_a_a; //0xA7
@@ -130,6 +131,7 @@ use inc_hl_addr::IncHlAddr; //0x34
 use ldd_a_hl::LddAHl;   //0x3A
 use ld_hl_n::LdHlN;     //0x36
 use halt::Halt;         //0x76
+use add_a_hl::AddAHl;   //0x86
 use add_a_a::AddAA;     //0x87
 use and_a_hl::AndAHl;   //0xA6
 use and_a_a::AndAA;     //0xA7
