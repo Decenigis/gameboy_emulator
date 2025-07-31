@@ -78,6 +78,7 @@ mod jp_hl; //0xE9
 mod ld_nn_a; //0xEA
 mod ldh_a_n; //0xF0
 mod di; //0xF3
+mod or_a_n; // 0xF6
 mod ld_hl_sp_n; // 0xF8
 mod ld_sp_hl; // 0xF9
 mod ld_a_nn; //0xFA
@@ -160,6 +161,7 @@ use jp_hl::JpHl;        //0xE9
 use ld_nn_a::LdNNA;     //0xEA
 use ldh_a_n::LdhAN;     //0xF0
 use di::Di;             //0xF3
+use or_a_n::OrAN;       //0xF6
 use ld_hl_sp_n::LdHlSpN;//0xF8
 use ld_sp_hl::LdSpHl;   //0xF9
 use ld_a_nn::LdANN;     //0xFA
