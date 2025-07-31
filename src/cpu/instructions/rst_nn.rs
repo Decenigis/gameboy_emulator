@@ -104,7 +104,7 @@ macro_rules! rst_nn {
 
                     assert_eq!(false, result);
                     assert_eq!(0xDFFE, registers.sp.get_value());
-                    assert_eq!($address_name, registers.pc.get_value());
+                    assert_eq!($address_hex, registers.pc.get_value());
                 }
 
                 #[test]
