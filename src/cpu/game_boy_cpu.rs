@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::fs;
 use std::sync::Arc;
 use parking_lot::Mutex;
@@ -17,7 +18,7 @@ pub struct GameBoyCPU {
     current_instruction: Box<dyn Instruction>,
     interrupt: Option<Interrupt>,
 
-    callstack: Vec<u16>
+    callstack: VecDeque<u16>
 }
 
 impl Drop for GameBoyCPU {
@@ -91,7 +92,7 @@ impl GameBoyCPU {
             current_instruction: first_instruction,
             interrupt: None,
 
-            callstack: Vec::new()
+            callstack: VecDeque::new()
         }
     }
 
@@ -111,7 +112,11 @@ impl GameBoyCPU {
             None => {}
         }
 
-        self.callstack.push(self.registers.pc.get_value());
+        self.callstack.push_back(self.registers.pc.get_value());
+        
+        if self.callstack.len() > 16384 {
+            self.callstack.pop_front();
+        }
 
         // if self.registers.pc.get_value() == 0x316 {
         //     panic!("{}", self.registers);
