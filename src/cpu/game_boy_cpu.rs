@@ -18,7 +18,7 @@ pub struct GameBoyCPU {
     current_instruction: Box<dyn Instruction>,
     interrupt: Option<Interrupt>,
 
-    callstack: VecDeque<u16>
+    callstack: VecDeque<u16>,
 }
 
 impl Drop for GameBoyCPU {
@@ -80,7 +80,7 @@ impl GameBoyCPU {
             0,
             0,
             0x100,
-            0xFFFF
+            0xFFFE
         );
         let f = registers.f.clone();
 
@@ -113,12 +113,12 @@ impl GameBoyCPU {
         }
 
         self.callstack.push_back(self.registers.pc.get_value());
-        
+
         if self.callstack.len() > 16384 {
             self.callstack.pop_front();
         }
 
-        // if self.registers.pc.get_value() == 0x316 {
+        // if self.registers.pc.get_value() == 0x28 {
         //     panic!("{}", self.registers);
         // }
 
