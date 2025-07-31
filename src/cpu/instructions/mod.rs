@@ -61,6 +61,7 @@ mod add_a_a; //0x87
 mod and_a_hl; //0xA6
 mod and_a_a; //0xA7
 mod xor_a; //0xAF
+mod or_a_hl; //0xB6
 mod jp_nn; //0xC3
 mod ret; //0xC9
 mod add_a_n; //0xC6
@@ -142,6 +143,7 @@ use add_a_a::AddAA;     //0x87
 use and_a_hl::AndAHl;   //0xA6
 use and_a_a::AndAA;     //0xA7
 use xor_a::XorA;        //0xAF
+use or_a_hl::OrAHl;     //0xB6
 use jp_nn::JpNn;        //0xC3
 use add_a_n::AddAN;     //0xC6
 use ret::Ret;           //0xC9
