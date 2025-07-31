@@ -2,6 +2,7 @@ mod bitwise_bad_instruction;
 mod bitwise;
 
 mod rr_r;
+mod srl_r;
 mod bit_b_r;
 mod bit_b_hl;
 mod res_b_r;
@@ -11,6 +12,7 @@ mod set_b_hl;
 mod swap_r;
 
 use rr_r::*;
+use srl_r::*;
 use bit_b_r::*;
 use bit_b_hl::*;
 use res_b_r::*;

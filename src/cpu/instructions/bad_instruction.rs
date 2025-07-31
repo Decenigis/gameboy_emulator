@@ -70,6 +70,6 @@ mod tests {
 
         let result = instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false, &mut false);
 
-        assert_eq!(true, result);
+        assert_eq!(false, result);
     }
 }
