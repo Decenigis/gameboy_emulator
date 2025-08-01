@@ -14,6 +14,8 @@ mod set_b_r;
 mod set_b_hl;
 mod swap_r;
 
+mod rrc_hl; //0xCB, 0x0E
+
 use rr_r::*;
 use rl_r::*;
 use sla_r::*;

@@ -245,7 +245,7 @@ impl ALU {
         }
     }
 
-    pub fn rrca(&self, a: &mut Register8) {
+    pub fn rrc(&self, a: &mut Register8) {
         let mut flags = self.flags.borrow_mut();
         flags.set_bit(Self::SUB_FLAG, false);
         flags.set_bit(Self::HALF_CARRY_FLAG, false);
@@ -1330,23 +1330,23 @@ mod tests {
     }
 
     #[test]
-    fn rrca_rolls_correctly() {
+    fn rrc_rolls_correctly() {
         let mut a = Register8::new(0b00010001);
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        alu.rrca(&mut a);
+        alu.rrc(&mut a);
 
         assert_eq!(a.get_value(), 0b10001000);
     }
 
     #[test]
-    fn rrca_sets_flags_correctly_for_zero_no_carry() {
+    fn rrc_sets_flags_correctly_for_zero_no_carry() {
         let mut a = Register8::new(0b00000000);
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        alu.rrca(&mut a);
+        alu.rrc(&mut a);
 
         assert_eq!(true, flags.borrow().get_bit(ALU::ZERO_FLAG));
         assert_eq!(false, flags.borrow().get_bit(ALU::SUB_FLAG));
@@ -1355,12 +1355,12 @@ mod tests {
     }
 
     #[test]
-    fn rrca_sets_flags_correctly_for_nonzero_carry() {
+    fn rrc_sets_flags_correctly_for_nonzero_carry() {
         let mut a = Register8::new(0b00010001);
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        alu.rrca(&mut a);
+        alu.rrc(&mut a);
 
         assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
         assert_eq!(false, flags.borrow().get_bit(ALU::SUB_FLAG));
