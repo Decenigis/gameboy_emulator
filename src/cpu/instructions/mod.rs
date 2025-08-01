@@ -58,6 +58,7 @@ mod ccf; //0x3F
 mod halt; //0x76
 mod add_a_hl; //0x86
 mod add_a_a; //0x87
+mod sub_a_hl; //0x96
 mod and_a_hl; //0xA6
 mod and_a_a; //0xA7
 mod xor_a; //0xAF
@@ -143,6 +144,7 @@ use ccf::Ccf;           //0x3F
 use halt::Halt;         //0x76
 use add_a_hl::AddAHl;   //0x86
 use add_a_a::AddAA;     //0x87
+use sub_a_hl::SubAHl;   //0x96
 use and_a_hl::AndAHl;   //0xA6
 use and_a_a::AndAA;     //0xA7
 use xor_a::XorA;        //0xAF
