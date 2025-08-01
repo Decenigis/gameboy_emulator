@@ -108,6 +108,8 @@ impl MemoryController {
     }
 
     pub fn clock(&mut self) {
+        self.io_map.lock().clock();
+        
         if self.oam_dma_position < 160 {
             self.performing_dma = true;
 
