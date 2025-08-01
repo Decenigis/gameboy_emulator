@@ -122,7 +122,7 @@ set_b_hl!(0xCE, 1);
 set_b_hl!(0xD6, 2);
 set_b_hl!(0xDE, 3);
 set_b_hl!(0xE6, 4);
-set_b_hl!(0xEA, 5);
+set_b_hl!(0xEE, 5);
 set_b_hl!(0xF6, 6);
 set_b_hl!(0xFE, 7);
 
