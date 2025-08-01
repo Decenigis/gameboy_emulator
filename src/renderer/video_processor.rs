@@ -247,7 +247,7 @@ impl VideoProcessor {
     }
 
     fn draw_sprites(&mut self, shader: &mut Box<dyn ShaderProgram>) -> Result<(), RendererError> {
-        {
+        let scanline = {
             let video_io_mutex = self.video_io.clone();
             let video_io_guard = video_io_mutex.lock();
 
@@ -258,9 +258,14 @@ impl VideoProcessor {
             );
 
             self.bind_tile_textures_to_units(true);
-        }
+            video_io_guard.get_ly()
+        };
 
         for object in self.oam.lock().get_objects() {
+            if (object.get_y()) > scanline + 16 || object.get_y() < scanline {
+                continue;
+            }
+
             shader.set_uniform("objectPosition".to_string(), &ivec2(object.get_x() as i32, object.get_y() as i32));
             shader.set_uniform("tileId".to_string(), &(object.get_tile() as i32));
 

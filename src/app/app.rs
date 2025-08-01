@@ -14,6 +14,7 @@ use dec_gl::types::{ivec2, vec4, Vec3};
 use dialog::{DialogBox, FileSelection};
 use glfw::{Action, Key, WindowEvent};
 use parking_lot::Mutex;
+use crate::app::PerformanceTimer;
 use crate::cpu::GameBoyCPU;
 use crate::memory::{MemoryController, MemoryTrait};
 use crate::renderer::VideoProcessor;
@@ -28,7 +29,9 @@ pub struct App {
     framebuffer: SimpleFramebuffer,
     shader_manager: ShaderManager,
 
-    rom_path: Option<String>
+    rom_path: Option<String>,
+
+    performance_timer: PerformanceTimer,
 }
 
 const GB_COLUR_0: Vec3 = Vec3{x: 0.7, y: 1.0, z: 0.5};
@@ -65,7 +68,8 @@ impl App {
             gl_handler,
             framebuffer,
             shader_manager,
-            rom_path: None
+            rom_path: None,
+            performance_timer: PerformanceTimer::new(),
         }
      }
 
@@ -154,9 +158,11 @@ impl App {
         let mut last_frame = std::time::Instant::now();
         let mut now = std::time::Instant::now();
 
-        while !self.gl_handler.borrow().wind_should_close() {
-            self.framebuffer.clear();
+        self.performance_timer.reset();
 
+        while !self.gl_handler.borrow().wind_should_close() {
+
+            self.performance_timer.set_category("Window Events");
             let events = self.gl_handler.borrow_mut().handle_events();
             for event in events.clone() {
                 match event {
@@ -250,13 +256,17 @@ impl App {
                 }
             }
 
+            self.performance_timer.set_category("Render (Framebuffer)");
+
+            self.framebuffer.clear();
+
             if self.gl_handler.borrow().get_window().has_resized_this_frame() { self.resize(); }
 
             self.framebuffer.bind_draw_target();
 
+            main_board.perform_frame(&mut self.shader_manager, &mut self.performance_timer).unwrap();
 
-            main_board.perform_frame(&mut self.shader_manager).unwrap();
-
+            self.performance_timer.set_category("Render (Framebuffer)");
             SimpleFramebuffer::bind_default_framebuffer();
             self.framebuffer.blit(
                 self.gl_handler.borrow().get_window().get_window_size(),
@@ -264,8 +274,10 @@ impl App {
                 gl::NEAREST,
             );
 
+            self.performance_timer.set_category("Render (Window)");
             self.gl_handler.borrow_mut().poll_window();
 
+            self.performance_timer.set_category("idle");
             now = std::time::Instant::now();
             let elapsed = now.duration_since(last_frame);
             last_frame = now;

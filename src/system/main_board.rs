@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use dec_gl::shader::ShaderManager;
 use parking_lot::Mutex;
+use crate::app::PerformanceTimer;
 use crate::cpu::CPU;
 use crate::memory::MemoryController;
 use crate::renderer::VideoProcessor;
@@ -28,19 +29,22 @@ impl MainBoard {
         }
     }
 
-    pub fn perform_frame(&mut self, shader_manager: &mut ShaderManager) -> Result<(), SystemError> {
+    pub fn perform_frame(&mut self, shader_manager: &mut ShaderManager, performance_timer: &mut PerformanceTimer) -> Result<(), SystemError> {
         let mut send_frame = false;
 
         while !send_frame {
+            performance_timer.set_category("Main Board (timing)");
             let events = self.vdu_counter.tick();
 
             for event in events {
+                performance_timer.set_category("Event Handling");
                 send_frame = send_frame || self.event_handler.handle_event(
                     &mut self.cpu,
                     self.memory.clone(),
                     &mut self.video_processor,
                     shader_manager,
-                    &event)?;
+                    &event,
+                    performance_timer)?;
             }
         }
 
@@ -51,7 +55,7 @@ impl MainBoard {
         self.memory.lock().reset();
         self.cpu.reset();
         self.vdu_counter.reset();
-        
+
         Ok(())
     }
 }

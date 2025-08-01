@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use dec_gl::shader::ShaderManager;
 use parking_lot::Mutex;
+use crate::app::PerformanceTimer;
 use crate::cpu::{Interrupt, CPU};
 use crate::memory::MemoryController;
 use crate::renderer::VideoProcessor;
@@ -16,20 +17,24 @@ impl EventHandler {
     }
 
     pub fn handle_event(&mut self,
-                    cpu: &mut Box<dyn CPU>,
-                    memory: Arc<Mutex<MemoryController>>,
-                    video_processor: &mut VideoProcessor,
-                    shader_manager: &mut ShaderManager,
-                    event: &ClockEvent)
+                        cpu: &mut Box<dyn CPU>,
+                        memory: Arc<Mutex<MemoryController>>,
+                        video_processor: &mut VideoProcessor,
+                        shader_manager: &mut ShaderManager,
+                        event: &ClockEvent,
+                        performance_timer: &mut PerformanceTimer
+    )
     -> Result<bool, SystemError>
     {
         match event {
             ClockEvent::CPUClock => {
+                performance_timer.set_category("CPU");
                 memory.lock().clock();
 
                 cpu.clock(memory.clone());
             }
             ClockEvent::DrawLine => {
+                performance_timer.set_category("Draw");
                 video_processor.try_update_graphics_data();
 
                 match video_processor.draw(shader_manager) {
@@ -38,9 +43,11 @@ impl EventHandler {
                 }
             }
             ClockEvent::SendFrame => {
+                performance_timer.set_category("Draw");
                 return Ok(true)
             }
             ClockEvent::VBlankInterrupt => {
+                performance_timer.set_category("CPU");
                 cpu.try_interrupt(memory.clone(), Interrupt::VBlank);
             }
         }
@@ -120,7 +127,7 @@ mod tests { //these are not very nice
 
         let event = ClockEvent::CPUClock;
 
-        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event);
+        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event, &mut PerformanceTimer::new_fake()).unwrap();
 
         assert_eq!(1, *number_of_times_clocked.borrow());
     }
@@ -162,7 +169,7 @@ mod tests { //these are not very nice
 
         let event = ClockEvent::DrawLine;
 
-        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event).unwrap();
+        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event, &mut PerformanceTimer::new_fake()).unwrap();
 
         assert_eq!(1, draw_count.borrow().clone());
     }
@@ -192,7 +199,7 @@ mod tests { //these are not very nice
 
         let event = ClockEvent::SendFrame;
 
-        let send_frame = event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event).unwrap();
+        let send_frame = event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event, &mut PerformanceTimer::new_fake()).unwrap();
 
         assert_eq!(true, send_frame);
     }
@@ -223,7 +230,7 @@ mod tests { //these are not very nice
 
         let event = ClockEvent::VBlankInterrupt;
 
-        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event).unwrap();
+        event_handler.handle_event(&mut cpu, memory.clone(), &mut video_processor, &mut shader_manager, &event, &mut PerformanceTimer::new_fake()).unwrap();
 
         assert_eq!(Some(Interrupt::VBlank), *interrupt.borrow());
     }
