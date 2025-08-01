@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::Write;
 use std::rc::Rc;
 use std::sync::Arc;
+use std::time::Instant;
 use dec_gl::{GLHandler, UICamera, Vertex2d};
 use dec_gl::framebuffer::SimpleFramebuffer;
 use dec_gl::renderable::GlRenderable;
@@ -155,13 +156,12 @@ impl App {
 
         let mut _frame: u64 = 0;
 
-        let mut last_frame = std::time::Instant::now();
-        let mut now = std::time::Instant::now();
+        let mut last_frame = Instant::now();
+        let mut now = Instant::now();
 
         self.performance_timer.reset();
 
         while !self.gl_handler.borrow().wind_should_close() {
-
             self.performance_timer.set_category("Window Events");
             let events = self.gl_handler.borrow_mut().handle_events();
             for event in events.clone() {
@@ -278,7 +278,17 @@ impl App {
             self.gl_handler.borrow_mut().poll_window();
 
             self.performance_timer.set_category("idle");
-            now = std::time::Instant::now();
+
+            now = Instant::now();
+
+            while self.gl_handler.borrow().get_vsync() &&
+                now.duration_since(last_frame) < std::time::Duration::from_micros(16500)
+            {
+                std::thread::sleep(std::time::Duration::from_micros(16500) - now.duration_since(last_frame));
+                now = Instant::now();
+            }
+
+
             let elapsed = now.duration_since(last_frame);
             last_frame = now;
 
