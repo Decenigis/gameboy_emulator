@@ -207,7 +207,7 @@ impl VideoProcessor {
 
             self.set_shader_values_for_background(shader,
                                                   &ivec2(video_io_guard.get_bg_x() as i32, video_io_guard.get_bg_y() as i32),
-                                                  video_io_guard.get_ly() - 1,
+                                                  video_io_guard.get_ly(),
                                                   &IVec2{ x: 0,y: 0 },
                                                   video_io_guard.get_bg_pal()
             );
@@ -227,7 +227,7 @@ impl VideoProcessor {
 
             self.set_shader_values_for_background(shader,
                                                   &ivec2(!video_io_guard.get_win_x().wrapping_sub(8) as i32, !video_io_guard.get_win_y().wrapping_sub(1) as i32),
-                                                  video_io_guard.get_ly() - 1,
+                                                  video_io_guard.get_ly(),
                                                   &ivec2((video_io_guard.get_win_x() as i32) - 8, video_io_guard.get_win_y() as i32),
                                                   video_io_guard.get_bg_pal()
             );
@@ -252,7 +252,7 @@ impl VideoProcessor {
             let video_io_guard = video_io_mutex.lock();
 
             self.set_shader_values_for_object(shader,
-                                              video_io_guard.get_ly() - 1,
+                                              video_io_guard.get_ly(),
                                               video_io_guard.get_obj_pal_0(),
                                               video_io_guard.get_obj_pal_1(),
             );

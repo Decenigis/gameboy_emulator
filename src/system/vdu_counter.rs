@@ -129,7 +129,6 @@ impl VDUCounter {
 
             *counter = 224;
         } else if ly == 0x90 {
-            clock_events.push(ClockEvent::DrawLine);
             clock_events.push(ClockEvent::VBlankInterrupt);
             clock_events.push(ClockEvent::SendFrame);
 
@@ -148,6 +147,7 @@ impl VDUCounter {
             *vblank = false;
 
             video_io.lock().set_ly(0);
+            clock_events.push(ClockEvent::DrawLine);
 
             *counter = 274 + 224;
         }
