@@ -137,6 +137,10 @@ impl MemoryController {
     pub fn get_io_map(&self) -> Arc<Mutex<IOMap>> {
         self.io_map.clone()
     }
+
+    pub fn get_rom(&self) -> &ROM {
+        &self.rom
+    }
 }
 
 

@@ -18,7 +18,7 @@ pub struct GameBoyCPU {
     current_instruction: Box<dyn Instruction>,
     interrupt: Option<Interrupt>,
 
-    callstack: VecDeque<u16>,
+    callstack: VecDeque<String>,
 }
 
 impl Drop for GameBoyCPU {
@@ -26,7 +26,7 @@ impl Drop for GameBoyCPU {
         let mut a = String::new();
 
         for val in self.callstack.iter() {
-            a.push_str(&format!("{:04X}\n", val));
+            a.push_str(val.as_str());
         }
 
         fs::write("./callstack", a);
@@ -112,15 +112,15 @@ impl GameBoyCPU {
             None => {}
         }
 
-        self.callstack.push_back(self.registers.pc.get_value());
+        self.callstack.push_back(format!("{:02X}: {:04X}\n", memory.lock().get_rom().get_relevant_bank(self.registers.pc.get_value()), self.registers.pc.get_value()));
 
-        if self.callstack.len() > 16384 {
+        if self.callstack.len() > 1000000 {
             self.callstack.pop_front();
         }
 
-        // if self.registers.pc.get_value() == 0x28 {
-        //     panic!("{}", self.registers);
-        // }
+        if self.registers.pc.get_value() == 0x5b4B {
+            //panic!("{}", self.registers);
+        }
 
         let opcode = memory.lock().get(self.registers.pc.get_value());
 

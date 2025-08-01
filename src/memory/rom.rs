@@ -84,7 +84,7 @@ impl ROM {
         }
     }
 
-    fn get_relevant_bank(&self, position: u16) -> usize {
+    pub fn get_relevant_bank(&self, position: u16) -> usize {
         if position < Self::ROM_BANK_SIZE as u16 {
             0
         } else {
