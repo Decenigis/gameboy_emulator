@@ -1,8 +1,7 @@
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::Instruction;
-use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
-use crate::memory::{MemoryController, MemoryTrait};
+use crate::memory::MemoryController;
 use parking_lot::Mutex;
 use paste::paste;
 use std::sync::Arc;
