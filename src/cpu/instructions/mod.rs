@@ -76,6 +76,7 @@ mod ldh_c_a; //0xE2
 mod and_a_n; //0xE6
 mod jp_hl; //0xE9
 mod ld_nn_a; //0xEA
+mod xor_a_n; //0xEE
 mod ldh_a_n; //0xF0
 mod di; //0xF3
 mod or_a_n; // 0xF6
@@ -159,6 +160,7 @@ use ldh_c_a::LdhCA;     //0xE2
 use and_a_n::AndAN;     //0xE6
 use jp_hl::JpHl;        //0xE9
 use ld_nn_a::LdNNA;     //0xEA
+use xor_a_n::XorAN;     //0xEE
 use ldh_a_n::LdhAN;     //0xF0
 use di::Di;             //0xF3
 use or_a_n::OrAN;       //0xF6

@@ -56,6 +56,23 @@ impl ALU {
         flags.set_bit(Self::ZERO_FLAG, a.borrow().is_zero());
     }
 
+    pub fn xor<T: Register>(&self, a: &mut T, b: &T)
+    where
+        <T as Register>::ValueType: BitXor,
+        <T as Register>::ValueType: From<<<T as Register>::ValueType as BitXor>::Output>
+    {
+        let mut flags = self.flags.borrow_mut();
+
+        flags.set_bit(Self::SUB_FLAG, false);
+        flags.set_bit(Self::HALF_CARRY_FLAG, false);
+        flags.set_bit(Self::CARRY_FLAG, false);
+
+        let value = (a.get_value() ^ b.get_value()).into();
+        a.set_value(value);
+
+        flags.set_bit(Self::ZERO_FLAG, a.is_zero());
+    }
+
     pub fn or_internal<T: Register>(&self, a: Rc<RefCell<T>>, b: Rc<RefCell<T>>)
     where
         <T as Register>::ValueType: BitOr,
@@ -72,7 +89,7 @@ impl ALU {
 
         flags.set_bit(Self::ZERO_FLAG, a.borrow().is_zero());
     }
-    
+
     pub fn or<T: Register>(&self, a: &mut T, b: &T)
     where
         <T as Register>::ValueType: BitOr,
@@ -382,80 +399,78 @@ mod tests {
 
         assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
-
+    
     #[test]
     fn xors_correctly() {
-        let a = Rc::new(RefCell::new(Register8::new(0b11110000)));
-        let b = Rc::new(RefCell::new(Register8::new(0b01010101)));
+        let mut a = Register8::new(0b11110000);
+        let b = Register8::new(0b01010101);
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        alu.xor_internal(a.clone(), b);
+        alu.xor(&mut a, &b);
 
-        assert_eq!(a.borrow().get_value(), 0b10100101);
+        assert_eq!(a.get_value(), 0b10100101);
     }
 
     #[test]
     fn xor_resets_sub_flag() {
-        let a = Rc::new(RefCell::new(Register8::new(0b11110000)));
-        let b = Rc::new(RefCell::new(Register8::new(0b01010101)));
+        let mut a = Register8::new(0b11110000);
+        let b = Register8::new(0b01010101);
         let flags = Rc::new(RefCell::new(Register8::new(0xFF)));
         let alu = ALU::new(flags.clone());
 
-        alu.xor_internal(a.clone(), b);
+        alu.xor(&mut a, &b);
 
         assert_eq!(false, flags.borrow().get_bit(ALU::SUB_FLAG));
     }
 
     #[test]
     fn xor_resets_half_carry_flag() {
-        let a = Rc::new(RefCell::new(Register8::new(0b11110000)));
-        let b = Rc::new(RefCell::new(Register8::new(0b01010101)));
+        let mut a = Register8::new(0b11110000);
+        let b = Register8::new(0b01010101);
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        alu.xor_internal(a.clone(), b);
+        alu.xor(&mut a, &b);
 
         assert_eq!(false, flags.borrow().get_bit(ALU::HALF_CARRY_FLAG));
     }
 
     #[test]
     fn xor_resets_carry_flag() {
-        let a = Rc::new(RefCell::new(Register8::new(0b11110000)));
-        let b = Rc::new(RefCell::new(Register8::new(0b01010101)));
+        let mut a = Register8::new(0b11110000);
+        let b = Register8::new(0b01010101);
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        alu.xor_internal(a.clone(), b);
+        alu.xor(&mut a, &b);
 
         assert_eq!(false, flags.borrow().get_bit(ALU::CARRY_FLAG));
     }
 
     #[test]
     fn xor_sets_zero_flag_correctly() {
-        let a = Rc::new(RefCell::new(Register8::new(0x00)));
-        let b = Rc::new(RefCell::new(Register8::new(0x00)));
+        let mut a = Register8::new(0x00);
+        let b = Register8::new(0x00);
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        alu.xor_internal(a.clone(), b);
+        alu.xor(&mut a, &b);
 
         assert_eq!(true, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
 
     #[test]
     fn xor_resets_zero_flag_correctly() {
-        let a = Rc::new(RefCell::new(Register8::new(0x01)));
-        let b = Rc::new(RefCell::new(Register8::new(0x00)));
+        let mut a = Register8::new(0x01);
+        let b = Register8::new(0x00);
         let flags = Rc::new(RefCell::new(Register8::new(0x00)));
         let alu = ALU::new(flags.clone());
 
-        alu.xor_internal(a.clone(), b);
+        alu.xor(&mut a, &b);
 
         assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
-
-
 
     #[test]
     fn or_internals_correctly() {
@@ -528,7 +543,7 @@ mod tests {
 
         assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
-    
+
     #[test]
     fn ors_correctly() {
         let mut a = Register8::new(0b11110000);
@@ -600,7 +615,7 @@ mod tests {
 
         assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
-    
+
     #[test]
     fn adds_u8_no_flags () {
         let mut a = Register8::new(0x01);
