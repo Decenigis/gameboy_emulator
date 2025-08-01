@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::sync::Arc;
 use parking_lot::Mutex;
 use crate::memory::io_map::VideoIO;
@@ -40,18 +41,16 @@ impl VDUCounter {
         }
     }
 
-    pub fn tick (&mut self) -> Vec<ClockEvent>{ //I really hate the look of this function but the borrow checker shouts if some of it is split up
-        let mut clock_events = Vec::new();
-
+    pub fn tick (&mut self, clock_events: &mut VecDeque<ClockEvent>) { //I really hate the look of this function but the borrow checker shouts if some of it is split up
         match self {
             VDUCounter::LCDOn { video_io, line_counter, vblank } => {
                 if LCDCMask::mask(video_io.lock().get_lcd_ctrl(), LCDCMask::LCD_ENABLE) {
                     if *line_counter % 2 == 0 {
-                        clock_events.push(ClockEvent::CPUClock)
+                        clock_events.push_back(ClockEvent::CPUClock);
                     }
 
                     if *line_counter == 0 {
-                        Self::reset_line_counter(video_io, &mut clock_events, line_counter, vblank);
+                        Self::reset_line_counter(video_io, clock_events, line_counter, vblank);
                     } else {
                         *line_counter -= 1;
                     }
@@ -73,8 +72,8 @@ impl VDUCounter {
                 }
                 else {
                     if *line_counter % 2 == 0 {
-                        clock_events.push(ClockEvent::CPUClock);
-                        clock_events.push(ClockEvent::SendFrame);
+                        clock_events.push_back(ClockEvent::CPUClock);
+                        clock_events.push_back(ClockEvent::SendFrame);
 
                         video_io.lock().set_ly(0);
 
@@ -88,12 +87,12 @@ impl VDUCounter {
             VDUCounter::LCDOff { video_io, generic_frame_counter } => {
                 if !LCDCMask::mask(video_io.lock().get_lcd_ctrl(), LCDCMask::LCD_ENABLE) {
                     if *generic_frame_counter % 2 == 0 {
-                        clock_events.push(ClockEvent::CPUClock)
+                        clock_events.push_back(ClockEvent::CPUClock);
                     }
 
                     if *generic_frame_counter == 0 {
                         *generic_frame_counter = 34996;
-                        clock_events.push(ClockEvent::SendFrame)
+                        clock_events.push_back(ClockEvent::SendFrame);
                     }
                     else {
                         *generic_frame_counter -= 1;
@@ -101,8 +100,8 @@ impl VDUCounter {
                 }
                 else {
                     if *generic_frame_counter % 2 == 0 {
-                        clock_events.push(ClockEvent::CPUClock);
-                        clock_events.push(ClockEvent::DrawLine);
+                        clock_events.push_back(ClockEvent::CPUClock);
+                        clock_events.push_back(ClockEvent::DrawLine);
                         *self = VDUCounter::new(video_io.clone());
                     }
                     else {
@@ -111,11 +110,9 @@ impl VDUCounter {
                 }
             }
         }
-
-        clock_events
     }
 
-    fn reset_line_counter (video_io: &mut Arc<Mutex<VideoIO>>, clock_events: &mut Vec<ClockEvent>, counter: &mut u32, vblank: &mut bool) {
+    fn reset_line_counter (video_io: &mut Arc<Mutex<VideoIO>>, clock_events: &mut VecDeque<ClockEvent>, counter: &mut u32, vblank: &mut bool) {
         let old_ly = video_io.lock().get_ly();
         let ly = old_ly + 1;
         video_io.lock().set_ly(ly);
@@ -125,12 +122,12 @@ impl VDUCounter {
         if ly < 0x90 {
             *vblank = false;
 
-            clock_events.push(ClockEvent::DrawLine);
+            clock_events.push_back(ClockEvent::DrawLine);
 
             *counter = 224;
         } else if ly == 0x90 {
-            clock_events.push(ClockEvent::VBlankInterrupt);
-            clock_events.push(ClockEvent::SendFrame);
+            clock_events.push_back(ClockEvent::VBlankInterrupt);
+            clock_events.push_back(ClockEvent::SendFrame);
 
             *vblank = true;
 
@@ -147,7 +144,7 @@ impl VDUCounter {
             *vblank = false;
 
             video_io.lock().set_ly(0);
-            clock_events.push(ClockEvent::DrawLine);
+            clock_events.push_back(ClockEvent::DrawLine);
 
             *counter = 274 + 224;
         }
@@ -189,7 +186,7 @@ mod tests {
         let mut vdu_counter =VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 2, vblank: false };
 
         video_io.lock().set(0xFF40, 0x00);
-        vdu_counter.tick();
+        vdu_counter.tick(&mut VecDeque::new());
 
         assert!(matches!(vdu_counter, VDUCounter::LCDOff { .. }));
     }
@@ -202,7 +199,7 @@ mod tests {
         let mut vdu_counter =VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 1, vblank: false };
 
         video_io.lock().set(0xFF40, 0x00);
-        vdu_counter.tick();
+        vdu_counter.tick(&mut VecDeque::new());
 
         assert!(matches!(vdu_counter, VDUCounter::LCDOn { .. }));
     }
@@ -215,7 +212,7 @@ mod tests {
         let mut vdu_counter =VDUCounter::LCDOff { video_io: video_io.clone(), generic_frame_counter: 2 };
 
         video_io.lock().set(0xFF40, 0x80);
-        vdu_counter.tick();
+        vdu_counter.tick(&mut VecDeque::new());
 
         assert!(matches!(vdu_counter, VDUCounter::LCDOn { .. }));
     }
@@ -228,7 +225,7 @@ mod tests {
         let mut vdu_counter =VDUCounter::LCDOff { video_io: video_io.clone(), generic_frame_counter: 1 };
 
         video_io.lock().set(0xFF40, 0x80);
-        vdu_counter.tick();
+        vdu_counter.tick(&mut VecDeque::new());
 
         assert!(matches!(vdu_counter, VDUCounter::LCDOff { .. }));
     }
@@ -241,7 +238,8 @@ mod tests {
 
         let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 2, vblank: false };
 
-        let events = vdu_counter.tick();
+        let mut events = VecDeque::new();
+        vdu_counter.tick(&mut events);
 
         assert!(matches!(events[0], ClockEvent::CPUClock));
     }
@@ -255,7 +253,8 @@ mod tests {
 
         let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 1, vblank: false };
 
-        let events = vdu_counter.tick();
+        let mut events = VecDeque::new();
+        vdu_counter.tick(&mut events);
 
         assert_eq!(0, events.len());
     }
@@ -268,7 +267,8 @@ mod tests {
 
         let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
-        let events = vdu_counter.tick();
+        let mut events = VecDeque::new();
+        vdu_counter.tick(&mut events);
 
         assert!(matches!(events[1], ClockEvent::DrawLine));
     }
@@ -281,7 +281,8 @@ mod tests {
 
         let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
-        let events = vdu_counter.tick();
+        let mut events = VecDeque::new();
+        vdu_counter.tick(&mut events);
 
         assert!(matches!(events[1], ClockEvent::VBlankInterrupt));
     }
@@ -293,7 +294,8 @@ mod tests {
 
         let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
-        let events = vdu_counter.tick();
+        let mut events = VecDeque::new();
+        vdu_counter.tick(&mut events);
 
         assert!(matches!(events[2], ClockEvent::SendFrame));
     }
@@ -306,7 +308,8 @@ mod tests {
 
         let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
-        let events = vdu_counter.tick();
+        let mut events = VecDeque::new();
+        vdu_counter.tick(&mut events);
 
         assert_eq!(1, events.len());
     }
@@ -319,7 +322,8 @@ mod tests {
 
         let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
-        vdu_counter.tick();
+        let mut events = VecDeque::new();
+        vdu_counter.tick(&mut events);
 
         assert_eq!(0, video_io.lock().get_ly());
     }
@@ -332,7 +336,8 @@ mod tests {
 
         let mut vdu_counter = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
 
-        let events = vdu_counter.tick();
+        let mut events = VecDeque::new();
+        vdu_counter.tick(&mut events);
 
         assert!(matches!(events[1], ClockEvent::DrawLine));
     }
@@ -344,7 +349,8 @@ mod tests {
 
         let mut vdu_counter = VDUCounter::LCDOff { video_io: video_io.clone(), generic_frame_counter: 2 };
 
-        let events = vdu_counter.tick();
+        let mut events = VecDeque::new();
+        vdu_counter.tick(&mut events);
 
         assert!(matches!(events[0], ClockEvent::CPUClock));
     }
@@ -356,7 +362,8 @@ mod tests {
 
         let mut vdu_counter = VDUCounter::LCDOff { video_io: video_io.clone(), generic_frame_counter: 1 };
 
-        let events = vdu_counter.tick();
+        let mut events = VecDeque::new();
+        vdu_counter.tick(&mut events);
 
         assert_eq!(0, events.len());
     }
@@ -368,7 +375,8 @@ mod tests {
 
         let mut vdu_counter = VDUCounter::LCDOff { video_io: video_io.clone(), generic_frame_counter: 0 };
 
-        let events = vdu_counter.tick();
+        let mut events = VecDeque::new();
+        vdu_counter.tick(&mut events);
 
         assert!(matches!(events[1], ClockEvent::SendFrame));
     }

@@ -58,6 +58,8 @@ impl PerformanceTimer {
     }
 
     pub fn set_category(&mut self, category: &str) {
+        if !self.real { return; }
+
         let now = Instant::now();
         if let Some(duration) = self.durations.get_mut(&self.current_category) {
             *duration += now.duration_since(self.last_change);

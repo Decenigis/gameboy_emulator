@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::sync::Arc;
 use dec_gl::shader::ShaderManager;
 use parking_lot::Mutex;
@@ -5,6 +6,7 @@ use crate::app::PerformanceTimer;
 use crate::cpu::CPU;
 use crate::memory::MemoryController;
 use crate::renderer::VideoProcessor;
+use crate::system::clock_event::ClockEvent;
 use crate::system::event_handler::EventHandler;
 use crate::system::system_error::SystemError;
 use crate::system::vdu_counter::VDUCounter;
@@ -15,6 +17,7 @@ pub struct MainBoard {
     memory: Arc<Mutex<MemoryController>>,
     video_processor: VideoProcessor,
     event_handler: EventHandler,
+    events: VecDeque<ClockEvent>,
 }
 
 impl MainBoard {
@@ -26,6 +29,7 @@ impl MainBoard {
             memory,
             video_processor,
             event_handler: EventHandler::new(),
+            events: VecDeque::new(),
         }
     }
 
@@ -34,9 +38,10 @@ impl MainBoard {
 
         while !send_frame {
             performance_timer.set_category("Main Board (timing)");
-            let events = self.vdu_counter.tick();
+            self.vdu_counter.tick(&mut self.events);
 
-            for event in events {
+            performance_timer.set_category("Event Handling");
+            for event in self.events.drain(..) {
                 performance_timer.set_category("Event Handling");
                 send_frame = send_frame || self.event_handler.handle_event(
                     &mut self.cpu,

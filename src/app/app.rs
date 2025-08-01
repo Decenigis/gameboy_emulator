@@ -69,7 +69,7 @@ impl App {
             framebuffer,
             shader_manager,
             rom_path: None,
-            performance_timer: PerformanceTimer::new(),
+            performance_timer: PerformanceTimer::new_fake(),
         }
      }
 
