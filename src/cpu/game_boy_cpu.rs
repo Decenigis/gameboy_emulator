@@ -48,6 +48,10 @@ impl CPU for GameBoyCPU {
         }
     }
 
+    /**
+        if two interrupts happen symultaneously, the gameboy would allow the other to be executed by calling reti. for now just discard the second interrupt
+        MORE RESEARCH NEEDED
+    */
     fn try_interrupt(&mut self, memory: Arc<Mutex<MemoryController>>, interrupt: Interrupt) {
         if !self.enable_interrupts {
             return;
@@ -65,7 +69,7 @@ impl CPU for GameBoyCPU {
 
         memory.lock().set(0xFF0F, if_ | interrupt.get_bit_mask());
     }
-    
+
     fn reset(&mut self) {
         *self = GameBoyCPU::new_with_nop();
     }

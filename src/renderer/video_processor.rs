@@ -44,6 +44,20 @@ impl LCDCMask {
     }
 }
 
+pub struct LCDStatMask {}
+
+impl LCDStatMask {
+    pub const LY_EQ_LYC_INT: u8 = 0x40;
+    pub const MODE_2_INT: u8 = 0x20;
+    pub const MODE_1_INT: u8 = 0x10;
+    pub const MODE_0_INT: u8 = 0x08;
+    pub const LY_EQ_LYC: u8 = 0x04;
+
+    pub fn mask(input: u8, mask: u8) -> bool {
+        input & mask != 0
+    }
+}
+
 impl VideoProcessor {
 
     pub fn new(

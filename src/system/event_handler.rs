@@ -50,6 +50,10 @@ impl EventHandler {
                 performance_timer.set_category("CPU");
                 cpu.try_interrupt(memory.clone(), Interrupt::VBlank);
             }
+            ClockEvent::LCDInterrupt => {
+                performance_timer.set_category("CPU");
+                cpu.try_interrupt(memory.clone(), Interrupt::LCD);
+            }
         }
         Ok(false)
     }

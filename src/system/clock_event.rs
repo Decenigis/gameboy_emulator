@@ -4,4 +4,5 @@ pub enum ClockEvent {
     SendFrame,
 
     VBlankInterrupt,
+    LCDInterrupt,
 }

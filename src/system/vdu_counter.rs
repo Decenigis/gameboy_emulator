@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::sync::Arc;
 use parking_lot::Mutex;
 use crate::memory::io_map::VideoIO;
-use crate::renderer::LCDCMask;
+use crate::renderer::{LCDCMask, LCDStatMask};
 use crate::system::clock_event::ClockEvent;
 
 /*
@@ -57,16 +57,27 @@ impl VDUCounter {
 
 
                     if !*vblank {
-                        let masked_lcd_stat = video_io.lock().get_lcd_stat() & 0x7C;
+                        let lcd_stat = video_io.lock().get_lcd_stat();
+                        let masked_lcd_stat = lcd_stat & 0x7C;
 
                         if *line_counter > 184 {
+                            if (lcd_stat & 3) != 2 &&LCDStatMask::mask(lcd_stat, LCDStatMask::MODE_2_INT) {
+                                clock_events.push_back(ClockEvent::LCDInterrupt);
+                            }
+                            
                             video_io.lock().set_lcd_stat(masked_lcd_stat | 0x82);
                         }
                         else if *line_counter < 100 {
                             video_io.lock().set_lcd_stat(masked_lcd_stat | 0x83);
+
                         }
                         else {
+                            if (lcd_stat & 3) != 0 && LCDStatMask::mask(lcd_stat, LCDStatMask::MODE_0_INT) {
+                                clock_events.push_back(ClockEvent::LCDInterrupt);
+                            }
+                            
                             video_io.lock().set_lcd_stat(masked_lcd_stat | 0x80);
+
                         }
                     }
                 }
@@ -117,7 +128,21 @@ impl VDUCounter {
         let ly = old_ly + 1;
         video_io.lock().set_ly(ly);
 
-        let masked_lcd_stat = video_io.lock().get_lcd_stat() & 0x7C;
+        let mut lcd_stat = video_io.lock().get_lcd_stat();
+
+        if ly == video_io.lock().get_lyc() {
+            if LCDStatMask::mask(lcd_stat, LCDStatMask::LY_EQ_LYC_INT) {
+                clock_events.push_back(ClockEvent::LCDInterrupt);
+            }
+
+            lcd_stat = lcd_stat | LCDStatMask::LY_EQ_LYC;
+        } else {
+            lcd_stat = lcd_stat & !LCDStatMask::LY_EQ_LYC;
+        }
+
+        video_io.lock().set_lcd_stat(lcd_stat);
+
+        let masked_lcd_stat = lcd_stat & 0x7C;
 
         if ly < 0x90 {
             *vblank = false;
@@ -128,6 +153,10 @@ impl VDUCounter {
         } else if ly == 0x90 {
             clock_events.push_back(ClockEvent::VBlankInterrupt);
             clock_events.push_back(ClockEvent::SendFrame);
+
+            if LCDStatMask::mask(lcd_stat, LCDStatMask::MODE_1_INT) {
+                clock_events.push_back(ClockEvent::LCDInterrupt);
+            }
 
             *vblank = true;
 

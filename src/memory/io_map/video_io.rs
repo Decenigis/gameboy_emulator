@@ -109,7 +109,7 @@ impl VideoIO {
         self.ly = ly;
     }
 
-    pub fn _get_lyc(&self) -> u8 {
+    pub fn get_lyc(&self) -> u8 {
         self.lyc
     }
 
