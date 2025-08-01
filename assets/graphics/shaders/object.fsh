@@ -16,6 +16,7 @@ uniform vec3 gbColour2;
 uniform vec3 gbColour3;
 
 uniform int objPal0;
+uniform int objPal1;
 uniform int tileId;
 
 uniform ivec2 objectPosition;
@@ -70,7 +71,14 @@ void main()
 
 	vec3 outColour;
 
-	switch ((objPal0 >> colour * 2) & 3) {
+	int currentPalette;
+	if (dmgPalette == 0) {
+		currentPalette = objPal0;
+	} else {
+		currentPalette = objPal1;
+	}
+
+	switch ((currentPalette >> colour * 2) & 3) {
 		case 0:
 			outColour = gbColour0;
 			break;
