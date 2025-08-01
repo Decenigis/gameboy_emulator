@@ -7,4 +7,5 @@ pub trait CPU {
 
     fn clock (&mut self, memory: Arc<Mutex<MemoryController>>);
     fn try_interrupt(&mut self, memory: Arc<Mutex<MemoryController>>, interrupt: Interrupt);
+    fn reset(&mut self);
 }

@@ -46,4 +46,12 @@ impl MainBoard {
 
         Ok(())
     }
+
+    pub fn reset(&mut self) -> Result<(), SystemError> {
+        self.memory.lock().reset();
+        self.cpu.reset();
+        self.vdu_counter.reset();
+        
+        Ok(())
+    }
 }

@@ -41,6 +41,12 @@ impl IOMap {
             video_io: Arc::new(Mutex::new(VideoIO::new()))
         }
     }
+    
+    pub fn reset(&mut self) {
+        *self.joypad_io.lock() = JoypadIO::new();
+        self.interrupt_io = InterruptIO::new();
+        *self.video_io.lock() = VideoIO::new();
+    }
 
     pub fn get_joypad_io(&self) -> Arc<Mutex<JoypadIO>> {
         self.joypad_io.clone()

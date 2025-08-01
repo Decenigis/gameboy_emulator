@@ -26,7 +26,9 @@ pub struct App {
 
     gl_handler: Rc<RefCell<GLHandler>>,
     framebuffer: SimpleFramebuffer,
-    shader_manager: ShaderManager
+    shader_manager: ShaderManager,
+
+    rom_path: Option<String>
 }
 
 const GB_COLUR_0: Vec3 = Vec3{x: 0.7, y: 1.0, z: 0.5};
@@ -62,7 +64,8 @@ impl App {
 
             gl_handler,
             framebuffer,
-            shader_manager
+            shader_manager,
+            rom_path: None
         }
      }
 
@@ -110,11 +113,11 @@ impl App {
         let memory_controller = Arc::new(Mutex::new(MemoryController::new()));
         let cpu = Box::new(GameBoyCPU::new_with_nop());
 
-        let rom_path = match self.get_rom_path() {
-            Some(path) => path,
-            None => return
+        self.rom_path = self.get_rom_path();
+        match &self.rom_path {
+            Some(path) => memory_controller.lock().load_rom(path),
+            None => {}
         };
-        memory_controller.lock().load_rom(&rom_path);
 
         let video_processor = {
             let vram = memory_controller.lock().get_vram_arc();
@@ -147,7 +150,7 @@ impl App {
         let joypad = memory_controller.lock().get_io_map().lock().get_joypad_io();
 
         let mut _frame: u64 = 0;
-        
+
         let mut last_frame = std::time::Instant::now();
         let mut now = std::time::Instant::now();
 
@@ -227,6 +230,22 @@ impl App {
                         let new_vsync = { !self.gl_handler.borrow().get_vsync() };
                         self.gl_handler.borrow_mut().set_vsync(new_vsync);
                     }
+                    WindowEvent::Key(Key::R, _, Action::Press, _) => {
+                        main_board.reset().unwrap();
+                        match &self.rom_path {
+                            Some(path) => memory_controller.lock().load_rom(path),
+                            None => {}
+                        };
+                    }
+                    WindowEvent::Key(Key::L, _, Action::Press, _) => {
+                        self.rom_path = self.get_rom_path();
+
+                        main_board.reset().unwrap();
+                        match &self.rom_path {
+                            Some(path) => memory_controller.lock().load_rom(path),
+                            None => {}
+                        };
+                    }
                     _ => {}
                 }
             }
@@ -246,11 +265,11 @@ impl App {
             );
 
             self.gl_handler.borrow_mut().poll_window();
-            
+
             now = std::time::Instant::now();
             let elapsed = now.duration_since(last_frame);
             last_frame = now;
-            
+
             self.gl_handler.borrow_mut().get_window_mut().set_title(format!("GB EMULATOR - {} FPS", (1.0 / elapsed.as_secs_f64()).round()).as_str());
 
             _frame += 1;

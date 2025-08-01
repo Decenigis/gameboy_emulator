@@ -26,6 +26,11 @@ impl CPU for NullableCPU {
     fn try_interrupt(&mut self, _memory: Arc<Mutex<MemoryController>>, interrupt: Interrupt) {
         self.interrupt_requested.replace(Some(interrupt));
     }
+    
+    fn reset(&mut self) {
+        self.num_times_clocked.replace(0);
+        self.interrupt_requested.replace(None);
+    }
 }
 
 impl NullableCPU {

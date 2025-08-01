@@ -26,6 +26,20 @@ impl VDUCounter {
         }
     }
 
+    pub fn reset(&mut self) {
+        let video_io = match self {
+            VDUCounter::LCDOn { video_io, .. } => video_io.clone(),
+            VDUCounter::LCDOff { video_io, .. } => video_io.clone(),
+        };
+
+        if LCDCMask::mask(video_io.lock().get_lcd_ctrl(), LCDCMask::LCD_ENABLE) {
+            *self = VDUCounter::LCDOn { video_io: video_io.clone(), line_counter: 0, vblank: false };
+        }
+        else {
+            *self = VDUCounter::LCDOff { video_io: video_io.clone(), generic_frame_counter: 0 };
+        }
+    }
+
     pub fn tick (&mut self) -> Vec<ClockEvent>{ //I really hate the look of this function but the borrow checker shouts if some of it is split up
         let mut clock_events = Vec::new();
 

@@ -50,6 +50,7 @@ impl ROM {
 
     pub fn load_rom_file(&mut self, path: &Path) {
         self.data.clear();
+        self.active_bank = 1;
 
         let mut file_data = match fs::read(path) {
             Ok(data) => data,

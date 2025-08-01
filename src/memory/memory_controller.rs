@@ -141,6 +141,22 @@ impl MemoryController {
     pub fn get_rom(&self) -> &ROM {
         &self.rom
     }
+    
+    pub fn reset(&mut self) {
+        self.oam_dma_position = 160;
+        self.oam_dma_address = 0;
+        self.performing_dma = false;
+
+        self.rom = ROM::new();
+        *self.vram.lock() = VRAM::new();
+        self.sram = SRAM::new();
+        self.ram = RAM::new();
+        
+        *self.oam.lock() = OAM::new();
+        self.io_map.lock().reset();
+        
+        self.hram = HRAM::new();
+    }
 }
 
 

@@ -65,6 +65,10 @@ impl CPU for GameBoyCPU {
 
         memory.lock().set(0xFF0F, if_ | interrupt.get_bit_mask());
     }
+    
+    fn reset(&mut self) {
+        *self = GameBoyCPU::new_with_nop();
+    }
 }
 
 impl GameBoyCPU {
