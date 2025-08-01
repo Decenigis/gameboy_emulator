@@ -30,7 +30,7 @@ macro_rules! inc_r {
 
                 fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
                     if self.counter == 1 {
-                        alu.add_no_carry(&mut registers.$register, &Register16::one());
+                        registers.$register.increment();
                     }
                     else if self.counter == 0 {
                         return true;
