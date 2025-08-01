@@ -42,6 +42,7 @@ mod ld_nn_sp; //0x08
 mod rrca; //0x0F
 mod rla; //0x17
 mod jr_n; //0x18
+mod rra; //0x1F
 mod ld_hl_nn; //0x21
 mod ldi_hl_a; //0x22
 mod inc_hl; //0x23
@@ -130,6 +131,7 @@ use ld_nn_sp::LdNnSp;   //0x08
 use rrca::RrcA;         //0x0F
 use rla::RlA;           //0x17
 use jr_n::JrN;          //0x18
+use rra::RrA;           //0x1F
 use ldi_hl_a::LdiHlA;   //0x22
 use inc_hl::IncHl;      //0x23
 use ldi_a_hl::LdiAHl;   //0x2A
