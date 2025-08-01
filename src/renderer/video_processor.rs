@@ -253,11 +253,12 @@ impl VideoProcessor {
         Ok(())
     }
 
-    fn set_shader_values_for_object(&self, shader: &mut Box<dyn ShaderProgram>, scanline: u8, obj_pal_0: u8, obj_pal_1: u8){
+    fn set_shader_values_for_object(&self, shader: &mut Box<dyn ShaderProgram>, scanline: u8, obj_pal_0: u8, obj_pal_1: u8, obj_size: bool){
         shader.bind();
         shader.set_uniform("scanline".to_string(), &(scanline as i32));
         shader.set_uniform("objPal0".to_string(), &(obj_pal_0 as i32));
         shader.set_uniform("objPal1".to_string(), &(obj_pal_1 as i32));
+        shader.set_uniform("objSize".to_string(), &(obj_size as i32 + 1));
     }
 
     fn draw_sprites(&mut self, shader: &mut Box<dyn ShaderProgram>) -> Result<(), RendererError> {
@@ -269,6 +270,7 @@ impl VideoProcessor {
                                               video_io_guard.get_ly(),
                                               video_io_guard.get_obj_pal_0(),
                                               video_io_guard.get_obj_pal_1(),
+                                              LCDCMask::mask(video_io_guard.get_lcd_ctrl(), LCDCMask::OBJ_SIZE),
             );
 
             self.bind_tile_textures_to_units(true);
