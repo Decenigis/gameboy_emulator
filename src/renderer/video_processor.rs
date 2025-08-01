@@ -207,7 +207,7 @@ impl VideoProcessor {
 
             self.set_shader_values_for_background(shader,
                                                   &ivec2(video_io_guard.get_bg_x() as i32, video_io_guard.get_bg_y() as i32),
-                                                  video_io_guard.get_ly(),
+                                                  video_io_guard.get_ly() - 1,
                                                   &IVec2{ x: 0,y: 0 },
                                                   video_io_guard.get_bg_pal()
             );
@@ -227,7 +227,7 @@ impl VideoProcessor {
 
             self.set_shader_values_for_background(shader,
                                                   &ivec2(!video_io_guard.get_win_x().wrapping_sub(8) as i32, !video_io_guard.get_win_y().wrapping_sub(1) as i32),
-                                                  video_io_guard.get_ly(),
+                                                  video_io_guard.get_ly() - 1,
                                                   &ivec2((video_io_guard.get_win_x() as i32) - 8, video_io_guard.get_win_y() as i32),
                                                   video_io_guard.get_bg_pal()
             );
@@ -239,11 +239,11 @@ impl VideoProcessor {
         Ok(())
     }
 
-    fn set_shader_values_for_object(&self, shader: &mut Box<dyn ShaderProgram>, draw_cutoff: &IVec2, obj_pal_0: &u8, obj_pal_1: &u8){
+    fn set_shader_values_for_object(&self, shader: &mut Box<dyn ShaderProgram>, scanline: u8, obj_pal_0: u8, obj_pal_1: u8){
         shader.bind();
-        shader.set_uniform("drawCutoff".to_string(), draw_cutoff);
-        shader.set_uniform("objPal0".to_string(), &(*obj_pal_0 as i32));
-        shader.set_uniform("objPal1".to_string(), &(*obj_pal_1 as i32));
+        shader.set_uniform("scanline".to_string(), &(scanline as i32));
+        shader.set_uniform("objPal0".to_string(), &(obj_pal_0 as i32));
+        shader.set_uniform("objPal1".to_string(), &(obj_pal_1 as i32));
     }
 
     fn draw_sprites(&mut self, shader: &mut Box<dyn ShaderProgram>) -> Result<(), RendererError> {
@@ -252,9 +252,9 @@ impl VideoProcessor {
             let video_io_guard = video_io_mutex.lock();
 
             self.set_shader_values_for_object(shader,
-                                              &ivec2(0, video_io_guard.get_ly() as i32),
-                                              &video_io_guard.get_obj_pal_0(),
-                                              &video_io_guard.get_obj_pal_1(),
+                                              video_io_guard.get_ly() - 1,
+                                              video_io_guard.get_obj_pal_0(),
+                                              video_io_guard.get_obj_pal_1(),
             );
 
             self.bind_tile_textures_to_units(true);

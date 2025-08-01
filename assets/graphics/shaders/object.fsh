@@ -8,7 +8,7 @@ in vec2 actualCoords;
 uniform usampler3D tileMapBank0;
 uniform usampler3D tileMapBank1;
 
-uniform ivec2 drawCutoff;
+uniform int scanline;
 
 uniform vec3 gbColour0;
 uniform vec3 gbColour1;
@@ -30,7 +30,7 @@ bool useBank1(uint tileId) {
 
 void main()
 {
-	if (int(actualCoords.x + objectPosition.x - 8) < drawCutoff.x || int(actualCoords.y + objectPosition.y - 16) != drawCutoff.y) {
+	if (int(actualCoords.y + objectPosition.y - 16) != scanline) {
 		discard;
 	}
 
