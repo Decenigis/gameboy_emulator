@@ -15,6 +15,7 @@ mod set_b_hl;
 mod swap_r;
 
 mod rrc_hl; //0xCB, 0x0E
+mod swap_hl; //0xCB, 0x36
 
 use rr_r::*;
 use rl_r::*;
@@ -28,5 +29,8 @@ use res_b_hl::*;
 use set_b_r::*;
 use set_b_hl::*;
 use swap_r::*;
+
+use rrc_hl::RrcHl;
+use swap_hl::SwapHl;
 
 pub use bitwise::Bitwise;

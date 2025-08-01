@@ -49,7 +49,7 @@ macro_rules! swap_r {
                 reusable_testing_macro!($opcode, [<Swap $reg_upper>]);
 
                 #[test]
-                fn tests_bit_when_set_on_tick_1() {
+                fn swaps_when_nonzero() {
                     let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
                     let memory = Arc::new(Mutex::new(MemoryController::new()));
                     let mut alu = ALU::new(registers.f.clone());
@@ -66,8 +66,9 @@ macro_rules! swap_r {
                     assert_eq!(false, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
                     assert_eq!(0x21, registers.$reg.borrow().get_value());
                 }
+
                 #[test]
-                fn tests_bit_when_unset_on_tick_1() {
+                fn swaps_when_zero() {
                     let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
                     let memory = Arc::new(Mutex::new(MemoryController::new()));
                     let mut alu = ALU::new(registers.f.clone());

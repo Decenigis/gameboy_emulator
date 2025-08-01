@@ -3,7 +3,6 @@ use parking_lot::Mutex;
 use crate::{bit_b_hl_decode_instruction, bit_b_r_decode_instruction, res_b_hl_decode_instruction, res_b_r_decode_instruction, rl_r_decode_instruction, rr_r_decode_instruction, set_b_hl_decode_instruction, set_b_r_decode_instruction, sla_r_decode_instruction, sra_r_decode_instruction, srl_r_decode_instruction, swap_r_decode_instruction};
 use crate::cpu::alu::ALU;
 use crate::cpu::instructions::bitwise::bitwise_bad_instruction::BitwiseBadInstruction;
-use crate::cpu::instructions::bitwise::rrc_hl::RrcHl;
 use crate::cpu::instructions::Instruction;
 use crate::cpu::register::Register;
 use crate::cpu::registers::Registers;
@@ -30,7 +29,8 @@ impl Bitwise {
         swap_r_decode_instruction!(opcode);
 
         return_if_is_instruction!(RrcHl, opcode);
-        
+        return_if_is_instruction!(SwapHl, opcode);
+
         BitwiseBadInstruction::from_opcode(opcode).unwrap()
     }
 }
