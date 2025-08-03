@@ -15,7 +15,13 @@ out vec2 actualCoords;
 
 void main()
 {
-    actualCoords = vec2(pos.x, pos.y * float(objSize));
+    actualCoords = vec2(pos.xy);
+
+    if (objSize == 1) {
+        actualCoords.y *= 2.0;
+    } else {
+        actualCoords.y *= 1.0;
+    }
 
     gl_Position = pv * vec4(actualCoords.xy + vec2(objectPosition) - vec2(8, 16), 1.0, 1.0);//vec4(pos.xyz, 1.0);
 

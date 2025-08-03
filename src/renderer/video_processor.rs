@@ -258,7 +258,7 @@ impl VideoProcessor {
         shader.set_uniform("scanline".to_string(), &(scanline as i32));
         shader.set_uniform("objPal0".to_string(), &(obj_pal_0 as i32));
         shader.set_uniform("objPal1".to_string(), &(obj_pal_1 as i32));
-        shader.set_uniform("objSize".to_string(), &(obj_size as i32 + 1));
+        shader.set_uniform("objSize".to_string(), &(obj_size as i32 ));
     }
 
     fn draw_sprites(&mut self, shader: &mut Box<dyn ShaderProgram>) -> Result<(), RendererError> {
