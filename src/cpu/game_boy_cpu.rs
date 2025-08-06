@@ -126,9 +126,12 @@ impl GameBoyCPU {
             self.callstack.pop_front();
         }
 
-        if self.registers.pc.get_value() == 0x5b4B {
-            //panic!("{}", self.registers);
-        }
+        // if self.registers.pc.get_value() > 0xC31A && self.registers.pc.get_value() < 0xC32A {
+        //     println!("{}", self.registers);
+        // }
+        // if self.registers.pc.get_value() == 0xC1B9 {
+        //     panic!("");
+        // }
 
         let opcode = memory.lock().get(self.registers.pc.get_value());
 

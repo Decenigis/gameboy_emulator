@@ -50,6 +50,8 @@ impl Registers {
         let pc = Register16::new(pc_val);
         let sp = Register16::new(sp_val);
 
+        af.l.borrow_mut().set_is_flags();
+
         Self {
             a: af.h.clone(),
             f: af.l.clone(),

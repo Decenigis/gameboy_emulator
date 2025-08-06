@@ -2,18 +2,19 @@ use crate::cpu::register::Register;
 
 #[derive(Clone)]
 pub struct Register8 {
-    value: u8
+    value: u8,
+    is_flags: bool,
 }
 
 impl Register for Register8 {
     type ValueType = u8;
 
     fn zero() -> Self {
-        Self { value: 0 }
+        Self { value: 0, is_flags: false }
     }
 
     fn one() -> Self {
-        Self { value: 1 }
+        Self { value: 1, is_flags: false }
     }
 
     fn is_zero(&self) -> bool {
@@ -27,6 +28,10 @@ impl Register for Register8 {
 
     fn set_value(&mut self, value: Self::ValueType) {
         self.value = value;
+
+        if self.is_flags {
+            self.value = self.value & 0xF0;
+        }
     }
 
     fn get_value(&self) -> Self::ValueType {
@@ -68,8 +73,13 @@ impl Register for Register8 {
 impl Register8 {
     pub fn new(value: u8) -> Self {
         Self {
-            value
+            value,
+            is_flags: false
         }
+    }
+
+    pub fn set_is_flags(&mut self) {
+        self.is_flags = true;
     }
 }
 
@@ -189,5 +199,15 @@ mod tests {
         a.wrapping_sub(&b);
 
         assert_eq!(0xF0, a.get_value());
+    }
+    
+    #[test]
+    fn if_is_flags_ignore_lower_nibble() {
+        let mut register = Register8::new(0x00);
+        register.set_is_flags();
+        
+        register.set_value(0xFF);
+
+        assert_eq!(0xF0, register.get_value());
     }
 }
