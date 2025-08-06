@@ -58,7 +58,7 @@ macro_rules! push_rr {
                 #[test]
                 fn push_low_on_tick_3() {
                     let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0xE000);
-                    registers.$register.set_value(0x1234);
+                    registers.$register.set_value(0x1230);
 
                     let mut alu = ALU::new(registers.f.clone());
                     let memory = Arc::new(Mutex::new(MemoryController::new()));
@@ -75,7 +75,7 @@ macro_rules! push_rr {
                 #[test]
                 fn saves_address_to_stack_on_tick_2() {
                     let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0xDFFF);
-                    registers.$register.set_value(0x1234);
+                    registers.$register.set_value(0x1230);
                     let mut alu = ALU::new(registers.f.clone());
                     let memory = Arc::new(Mutex::new(MemoryController::new()));
 
@@ -84,7 +84,7 @@ macro_rules! push_rr {
                     let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(false, result);
-                    assert_eq!(0x34, memory.lock().get(0xDFFE));
+                    assert_eq!(0x30, memory.lock().get(0xDFFE));
                     assert_eq!(0xDFFE, registers.sp.get_value());
                 }
 

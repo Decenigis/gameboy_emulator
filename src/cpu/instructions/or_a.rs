@@ -50,7 +50,7 @@ mod tests {
     }
 
     #[test]
-    fn act_results_in_zero() {
+    fn act_results_in_same_value() {
         let mut registers = Registers::new(0xFF00, 0, 0, 0, 0, 0);
         let mut alu = ALU::new(registers.f.clone());
 
@@ -58,6 +58,6 @@ mod tests {
 
         instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false, &mut false);
 
-        assert_eq!(0x00, registers.a.borrow().get_value());
+        assert_eq!(0xFF, registers.a.borrow().get_value());
     }
 }

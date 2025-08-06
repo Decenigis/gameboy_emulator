@@ -61,14 +61,14 @@ macro_rules! pop_rr {
                     let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0xDFFE);
                     let mut alu = ALU::new(registers.f.clone());
                     let memory = Arc::new(Mutex::new(MemoryController::new()));
-                    memory.lock().set(0xDFFE, 0x34);
+                    memory.lock().set(0xDFFE, 0x30);
 
                     let mut instruction = [<Pop $register_upper>] { counter: 2 };
 
                     let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(false, result);
-                    assert_eq!(0x0034, registers.$register.get_value());
+                    assert_eq!(0x0030, registers.$register.get_value());
                     assert_eq!(0xDFFF, registers.sp.get_value());
                 }
 
@@ -77,7 +77,7 @@ macro_rules! pop_rr {
                     let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0xDFFF);
                     let mut alu = ALU::new(registers.f.clone());
                     let memory = Arc::new(Mutex::new(MemoryController::new()));
-                    registers.$register.set_value(0x0034);
+                    registers.$register.set_value(0x0030);
                     memory.lock().set(0xDFFF, 0x12);
 
                     let mut instruction = [<Pop $register_upper>] { counter: 1 };
@@ -85,7 +85,7 @@ macro_rules! pop_rr {
                     let result = instruction.act(&mut registers, &mut alu, memory.clone(), &mut false, &mut false);
 
                     assert_eq!(false, result);
-                    assert_eq!(0x1234, registers.$register.get_value());
+                    assert_eq!(0x1230, registers.$register.get_value());
                     assert_eq!(0xE000, registers.sp.get_value());
                 }
 
