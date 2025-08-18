@@ -60,6 +60,7 @@ mod halt; //0x76
 mod add_a_hl; //0x86
 mod add_a_a; //0x87
 mod adc_a_hl; //0x8E
+mod adc_a_a; //0x8F
 mod sub_a_hl; //0x96
 mod and_a_hl; //0xA6
 mod and_a_a; //0xA7
@@ -153,6 +154,7 @@ use halt::Halt;         //0x76
 use add_a_hl::AddAHl;   //0x86
 use add_a_a::AddAA;     //0x87
 use adc_a_hl::AdcAHl;   //0x8E
+use adc_a_a::AdcAA;     //0x8F
 use sub_a_hl::SubAHl;   //0x96
 use and_a_hl::AndAHl;   //0xA6
 use and_a_a::AndAA;     //0xA7
@@ -161,7 +163,7 @@ use xor_a::XorA;        //0xAF
 use or_a_hl::OrAHl;     //0xB6
 use or_a::OrA;          //0xB7
 use cp_a_hl::CpAHl;     //0xBE
-use cp_a_a::CpAA;     //0xBE
+use cp_a_a::CpAA;       //0xBE
 use jp_nn::JpNn;        //0xC3
 use add_a_n::AddAN;     //0xC6
 use ret::Ret;           //0xC9
