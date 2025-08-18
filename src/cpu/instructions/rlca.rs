@@ -23,7 +23,7 @@ impl Instruction for RlcA {
     }
 
     fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
-        alu.rlca(&mut registers.a.borrow_mut());
+        alu.rlc(&mut registers.a.borrow_mut());
 
         true
     }

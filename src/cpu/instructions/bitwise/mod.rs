@@ -1,6 +1,7 @@
 mod bitwise_bad_instruction;
 mod bitwise;
 
+mod rlc_r;
 mod rrc_r;
 mod rr_r;
 mod rl_r;
@@ -18,6 +19,7 @@ mod swap_r;
 mod rrc_hl; //0xCB, 0x0E
 mod swap_hl; //0xCB, 0x36
 
+use rlc_r::*;
 use rr_r::*;
 use rrc_r::*;
 use rl_r::*;
