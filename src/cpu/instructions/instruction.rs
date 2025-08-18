@@ -119,6 +119,7 @@ pub fn decode_instruction(opcode: &u8) -> Box<dyn Instruction> {
     return_if_is_instruction!(OrAHl, opcode);   //0xB6
     return_if_is_instruction!(OrA, opcode);     //0xB7
     return_if_is_instruction!(CpAHl, opcode);   //0xBE
+    return_if_is_instruction!(CpAA, opcode);    //0xBF
     return_if_is_instruction!(JpNn, opcode);    //0xC3
     return_if_is_instruction!(AddAN, opcode);   //0xC6
     return_if_is_instruction!(Ret, opcode);     //0xC9
