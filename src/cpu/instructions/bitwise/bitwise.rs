@@ -28,9 +28,12 @@ impl Bitwise {
         res_b_hl_decode_instruction!(opcode);
         set_b_r_decode_instruction!(opcode);
         set_b_hl_decode_instruction!(opcode);
+        set_b_hl_decode_instruction!(opcode);
         swap_r_decode_instruction!(opcode);
 
+        return_if_is_instruction!(RlcHl, opcode);
         return_if_is_instruction!(RrcHl, opcode);
+        return_if_is_instruction!(RlHl, opcode);
         return_if_is_instruction!(SwapHl, opcode);
 
         BitwiseBadInstruction::from_opcode(opcode).unwrap()
