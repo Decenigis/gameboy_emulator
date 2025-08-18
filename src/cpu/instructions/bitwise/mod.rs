@@ -18,7 +18,8 @@ mod swap_r;
 
 mod rlc_hl; //0xCB, 0x06
 mod rrc_hl; //0xCB, 0x0E
-mod rl_hl; //0xCB, 0x06
+mod rl_hl; //0xCB, 0x16
+mod rr_hl; //0xCB, 0x1E
 mod swap_hl; //0xCB, 0x36
 
 use rlc_r::*;
@@ -39,6 +40,7 @@ use swap_r::*;
 use rlc_hl::RlcHl;
 use rrc_hl::RrcHl;
 use rl_hl::RlHl;
+use rr_hl::RrHl;
 use swap_hl::SwapHl;
 
 pub use bitwise::Bitwise;
