@@ -27,7 +27,7 @@ impl Instruction for BitwiseBadInstruction {
 
         // let mut file = File::create("memdump.bin").unwrap();
         // let mut memory: Vec<u8> = vec![];
-        // 
+        //
         // for i in 0..0xFFFF {
         //     memory.push(memory_controller.lock().get(i));
         // }
