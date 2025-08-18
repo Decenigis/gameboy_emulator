@@ -36,6 +36,8 @@ impl Bitwise {
         return_if_is_instruction!(RlHl, opcode);
         return_if_is_instruction!(RrHl, opcode);
         return_if_is_instruction!(SlaHl, opcode);
+        return_if_is_instruction!(SraHl, opcode);
+        return_if_is_instruction!(SrlHl, opcode);
         return_if_is_instruction!(SwapHl, opcode);
 
         BitwiseBadInstruction::from_opcode(opcode).unwrap()
