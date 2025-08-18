@@ -63,6 +63,7 @@ mod adc_a_hl; //0x8E
 mod adc_a_a; //0x8F
 mod sub_a_hl; //0x96
 mod sub_a_a; //0x97
+mod sbc_a_hl; //0x9E
 mod sbc_a_a; //0x9F
 mod and_a_hl; //0xA6
 mod and_a_a; //0xA7
@@ -159,6 +160,7 @@ use adc_a_hl::AdcAHl;   //0x8E
 use adc_a_a::AdcAA;     //0x8F
 use sub_a_hl::SubAHl;   //0x96
 use sub_a_a::SubAA;     //0x97
+use sbc_a_hl::SbcAHl;     //0x9F
 use sbc_a_a::SbcAA;     //0x9F
 use and_a_hl::AndAHl;   //0xA6
 use and_a_a::AndAA;     //0xA7
