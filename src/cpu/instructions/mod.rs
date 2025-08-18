@@ -62,6 +62,7 @@ mod add_a_a; //0x87
 mod adc_a_hl; //0x8E
 mod adc_a_a; //0x8F
 mod sub_a_hl; //0x96
+mod sub_a_a; //0x97
 mod and_a_hl; //0xA6
 mod and_a_a; //0xA7
 mod xor_a_hl; //0xAE
@@ -156,6 +157,7 @@ use add_a_a::AddAA;     //0x87
 use adc_a_hl::AdcAHl;   //0x8E
 use adc_a_a::AdcAA;     //0x8F
 use sub_a_hl::SubAHl;   //0x96
+use sub_a_a::SubAA;     //0x97
 use and_a_hl::AndAHl;   //0xA6
 use and_a_a::AndAA;     //0xA7
 use xor_a_hl::XorAHl;   //0xAE
