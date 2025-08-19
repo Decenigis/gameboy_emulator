@@ -46,6 +46,7 @@ mod rra; //0x1F
 mod ld_hl_nn; //0x21
 mod ldi_hl_a; //0x22
 mod inc_hl; //0x23
+mod daa; //0x27
 mod ldi_a_hl; //0x2A
 mod cpl_a; //0x2F
 mod ld_sp_nn; //0x31
@@ -143,6 +144,7 @@ use jr_n::JrN;          //0x18
 use rra::RrA;           //0x1F
 use ldi_hl_a::LdiHlA;   //0x22
 use inc_hl::IncHl;      //0x23
+use daa::DAA;           //0x27
 use ldi_a_hl::LdiAHl;   //0x2A
 use cpl_a::CplA;        //0x2F
 use ld_sp_nn::LdSpNn;   //0x31
