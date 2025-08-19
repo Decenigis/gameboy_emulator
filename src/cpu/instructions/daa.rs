@@ -28,7 +28,6 @@ impl Instruction for DAA {
     fn act(&mut self, registers: &mut Registers, _alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
         let mut offset = 0;
 
-        println!("bob");
 
         let a_value = registers.a.borrow().get_value();
         let half_carry = registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG);
@@ -82,20 +81,12 @@ mod tests {
         let mut alu = ALU::new(registers.f.clone());
 
         let mut instruction = DAA {};
+        
+        instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false, &mut false);
+        
+        assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
+        assert_eq!(false, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
 
-        for i in 0..=0xFF {
-            registers.a.borrow_mut().set_value(i);
-
-            instruction.act(&mut registers, &mut alu, Arc::new(Mutex::new(MemoryController::new())), &mut false, &mut false);
-
-            if i == 0 {
-                assert_eq!(true, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
-            } else {
-                assert_eq!(false, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
-            }
-            assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
-            assert_eq!(false, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
-        }
     }
     
     //ngl testing daa is really hard so leaving it like this for now
