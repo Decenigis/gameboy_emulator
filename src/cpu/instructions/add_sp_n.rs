@@ -38,6 +38,9 @@ impl Instruction for AddSpN {
             else {
                 alu.add(&mut registers.sp, &Register16::new(self.relative_address as u16));
             }
+
+            registers.f.borrow_mut().set_bit(ALU::ZERO_FLAG, false);
+            registers.f.borrow_mut().set_bit(ALU::SUB_FLAG, false);
         }
         else if self.counter == 0 {
             return true;
@@ -54,52 +57,66 @@ mod tests {
     use super::*;
 
     reusable_testing_macro!(0xE8, AddSpN);
-    //
-    // #[test]
-    // fn calculate_address_on_tick_1_for_sub() {
-    //     let mut registers = Registers::new(0, 0, 0, 0, 0xC001, 0);
-    //     let mut alu = ALU::new(registers.f.clone());
-    //     let memory = Arc::new(Mutex::new(MemoryController::new()));
-    //
-    //     memory.lock().set(0xC001, 0xFE);
-    //
-    //     let mut instruction = AddSpN { counter: 1, address: 0 };
-    //
-    //     let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
-    //
-    //     assert_eq!(false, result);
-    //
-    //     assert_eq!(0xC000, instruction.address);
-    // }
-    //
-    // #[test]
-    // fn calculate_address_on_tick_1_for_add() {
-    //     let mut registers = Registers::new(0, 0, 0, 0, 0xC001, 0);
-    //     let mut alu = ALU::new(registers.f.clone());
-    //     let memory = Arc::new(Mutex::new(MemoryController::new()));
-    //
-    //     memory.lock().set(0xC001, 0x02);
-    //
-    //     let mut instruction = AddSpN { counter: 1, address: 0 };
-    //
-    //     let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
-    //
-    //     assert_eq!(false, result);
-    //     assert_eq!(0xC004, instruction.address);
-    // }
-    //
-    // #[test]
-    // fn update_pc_on_tick_0_and_get_next_instruction() {
-    //     let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
-    //     let mut alu = ALU::new(registers.f.clone());
-    //     let memory = Arc::new(Mutex::new(MemoryController::new()));
-    //
-    //     let mut instruction = AddSpN { counter: 0, address: 0x1234 };
-    //
-    //     let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
-    //
-    //     assert_eq!(true, result);
-    //
-    //     assert_eq!(0x1234, registers.pc.get_value());
-    // }
+
+    #[test]
+    fn load_relative_address_on_tick_3() {
+        let mut registers = Registers::new(0, 0, 0, 0, 0xC001, 0);
+        let mut alu = ALU::new(registers.f.clone());
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+
+        memory.lock().set(0xC001, 0xFE);
+
+        let mut instruction = AddSpN { counter: 3, relative_address: 0 };
+
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
+
+        assert_eq!(false, result);
+        assert_eq!(0xFE, instruction.relative_address);
+        assert_eq!(0xC002, registers.pc.get_value());
+    }
+
+    #[test]
+    fn calculate_address_on_tick_2_for_add() {
+        let mut registers = Registers::new(0, 0, 0, 0, 0xC001, 0x1000);
+        let mut alu = ALU::new(registers.f.clone());
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+
+        let mut instruction = AddSpN { counter: 2, relative_address: 0x01 };
+
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
+
+        assert_eq!(false, result);
+        assert_eq!(0x1001, registers.sp.get_value());
+        assert_eq!(false, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
+        assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
+    }
+
+    #[test]
+    fn calculate_address_on_tick_1_for_sub() {
+        let mut registers = Registers::new(0, 0, 0, 0, 0xC001, 0x1000);
+        let mut alu = ALU::new(registers.f.clone());
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+
+        let mut instruction = AddSpN { counter: 2, relative_address: 0xFF };
+
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
+
+        assert_eq!(false, result);
+        assert_eq!(0xFFF, registers.sp.get_value());
+        assert_eq!(false, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
+        assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
+    }
+
+    #[test]
+    fn get_next_instruction_on_tick_0() {
+        let mut registers = Registers::new(0, 0, 0, 0, 0xC000, 0);
+        let mut alu = ALU::new(registers.f.clone());
+        let memory = Arc::new(Mutex::new(MemoryController::new()));
+
+        let mut instruction = AddSpN { counter: 0, relative_address: 0 };
+
+        let result = instruction.act(&mut registers, &mut alu, memory.clone(),&mut false, &mut false);
+
+        assert_eq!(true, result);
+    }
 }
