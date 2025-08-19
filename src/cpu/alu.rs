@@ -127,7 +127,9 @@ impl ALU {
 
         a.wrapping_add(b);
 
-        flags.set_bit(Self::ZERO_FLAG, a.is_zero());
+        if T::get_affects_zero() {
+            flags.set_bit(Self::ZERO_FLAG, a.is_zero());
+        }
     }
 
     pub fn add<T: Register>(&self, a: &mut T, b: &T)
@@ -652,6 +654,20 @@ mod tests {
         alu.add(&mut a, &b);
 
         assert_eq!(a.get_value(), 0x101);
+    }
+
+    #[test]
+    fn ignores_zero_on_u16 () {
+        let mut a = Register16::new(0xFFFF);
+        let b = Register16::new(0x01);
+        let flags = Rc::new(RefCell::new(Register8::new(0x00)));
+        let alu = ALU::new(flags.clone());
+
+        flags.borrow_mut().set_bit(ALU::ZERO_FLAG, false);
+
+        alu.add(&mut a, &b);
+
+        assert_eq!(false, flags.borrow().get_bit(ALU::ZERO_FLAG));
     }
 
     #[test]
