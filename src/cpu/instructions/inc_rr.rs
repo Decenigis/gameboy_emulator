@@ -8,7 +8,7 @@ use parking_lot::Mutex;
 use paste::paste;
 use std::sync::Arc;
 
-macro_rules! inc_r {
+macro_rules! inc_rr {
     ($opcode:literal, $register:ident, $register_upper:ident) => {
         paste!{
             pub struct [<Inc $register_upper>] {
@@ -84,10 +84,10 @@ macro_rules! inc_r {
     }
 }
 
-inc_r!(0x03, bc, Bc);
-inc_r!(0x13, de, De);
-inc_r!(0x23, hl, Hl);
-inc_r!(0x33, sp, Sp);
+inc_rr!(0x03, bc, Bc);
+inc_rr!(0x13, de, De);
+inc_rr!(0x23, hl, Hl);
+inc_rr!(0x33, sp, Sp);
 
 
 #[macro_export] macro_rules! inc_rr_decode_instruction {
