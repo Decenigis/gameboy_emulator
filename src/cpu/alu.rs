@@ -198,8 +198,10 @@ impl ALU {
         // THIS IS WRONG!!! Barely anything uses half carry so it's maybe fine?
 
         a.wrapping_sub(b);
-
-        flags.set_bit(Self::ZERO_FLAG, a.is_zero());
+        
+        if T::get_affects_zero() {
+            flags.set_bit(Self::ZERO_FLAG, a.is_zero());
+        }
     }
 
     pub fn sub<T: Register>(&self, a: &mut T, b: &T)
