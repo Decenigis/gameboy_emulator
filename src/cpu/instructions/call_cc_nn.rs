@@ -181,7 +181,7 @@ macro_rules! call_cc_nn {
 call_cc_nn!(0xC4, nz, Nz, ZERO_FLAG, false);
 call_cc_nn!(0xCC, z, Z, ZERO_FLAG, true);
 call_cc_nn!(0xD4, nc, Nc, CARRY_FLAG, false);
-call_cc_nn!(0xDC, c, C, CARRY_FLAG, false);
+call_cc_nn!(0xDC, c, C, CARRY_FLAG, true);
 
 
 
