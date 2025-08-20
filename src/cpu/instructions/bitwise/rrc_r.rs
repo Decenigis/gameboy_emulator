@@ -28,7 +28,7 @@ macro_rules! rrc_r {
 
                 fn act(&mut self, registers: &mut Registers, alu: &mut ALU, _memory_controller: Arc<Mutex<MemoryController>>, _enable_interrupts: &mut bool, _is_halted: &mut bool) -> bool {
                     if self.counter == 1 {
-                        alu.rr(&mut *registers.$reg.borrow_mut());
+                        alu.rrc(&mut *registers.$reg.borrow_mut());
                     }
                     else if self.counter == 0 {
                         return true;
@@ -63,7 +63,7 @@ macro_rules! rrc_r {
                     assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
                     assert_eq!(false, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
                     assert_eq!(true, registers.f.borrow().get_bit(ALU::CARRY_FLAG));
-                    assert_eq!(0b00010001, registers.$reg.borrow().get_value());
+                    assert_eq!(0b10010001, registers.$reg.borrow().get_value());
                 }
 
                 #[test]
