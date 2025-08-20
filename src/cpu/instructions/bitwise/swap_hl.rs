@@ -34,12 +34,13 @@ impl Instruction for SwapHl {
             let mut flags = registers.f.borrow_mut();
 
             flags.set_bit(ALU::SUB_FLAG, false);
-            flags.set_bit(ALU::HALF_CARRY_FLAG, true);
+            flags.set_bit(ALU::HALF_CARRY_FLAG, false);
+            flags.set_bit(ALU::CARRY_FLAG, false);
 
             let old_value = self.value_register.get_value();
             self.value_register.set_value(old_value << 4 | old_value >> 4);
 
-            flags.set_bit(ALU::ZERO_FLAG, self.value_register.get_value() == 0);
+            flags.set_bit(ALU::ZERO_FLAG, self.value_register.is_zero());
         }
         else if self.counter == 1 {
             memory_controller.lock().set(registers.hl.get_value(), self.value_register.get_value());
@@ -88,7 +89,8 @@ mod tests {
 
         assert_eq!(false, result);
         assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
-        assert_eq!(true, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+        assert_eq!(false, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+        assert_eq!(false, registers.f.borrow().get_bit(ALU::CARRY_FLAG));
         assert_eq!(false, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
         assert_eq!(0x21, instruction.value_register.get_value());
     }
@@ -105,7 +107,8 @@ mod tests {
 
         assert_eq!(false, result);
         assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
-        assert_eq!(true, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+        assert_eq!(false, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+        assert_eq!(false, registers.f.borrow().get_bit(ALU::CARRY_FLAG));
         assert_eq!(true, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
         assert_eq!(0x0, instruction.value_register.get_value());
     }

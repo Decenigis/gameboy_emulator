@@ -30,12 +30,13 @@ macro_rules! swap_r {
                     let mut flags = registers.f.borrow_mut();
 
                     flags.set_bit(ALU::SUB_FLAG, false);
-                    flags.set_bit(ALU::HALF_CARRY_FLAG, true);
+                    flags.set_bit(ALU::HALF_CARRY_FLAG, false);
+                    flags.set_bit(ALU::CARRY_FLAG, false);
 
                     let old_value = registers.$reg.borrow().get_value();
                     registers.$reg.borrow_mut().set_value(old_value << 4 | old_value >> 4);
 
-                    flags.set_bit(ALU::ZERO_FLAG, registers.$reg.borrow().get_value() == 0);
+                    flags.set_bit(ALU::ZERO_FLAG, registers.$reg.borrow().is_zero());
 
                     true
                 }
@@ -62,7 +63,8 @@ macro_rules! swap_r {
 
                     assert_eq!(true, result);
                     assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
-                    assert_eq!(true, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+                    assert_eq!(false, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+                    assert_eq!(false, registers.f.borrow().get_bit(ALU::CARRY_FLAG));
                     assert_eq!(false, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
                     assert_eq!(0x21, registers.$reg.borrow().get_value());
                 }
@@ -81,7 +83,8 @@ macro_rules! swap_r {
 
                     assert_eq!(true, result);
                     assert_eq!(false, registers.f.borrow().get_bit(ALU::SUB_FLAG));
-                    assert_eq!(true, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+                    assert_eq!(false, registers.f.borrow().get_bit(ALU::HALF_CARRY_FLAG));
+                    assert_eq!(false, registers.f.borrow().get_bit(ALU::CARRY_FLAG));
                     assert_eq!(true, registers.f.borrow().get_bit(ALU::ZERO_FLAG));
                     assert_eq!(0x0, registers.$reg.borrow().get_value());
                 }
